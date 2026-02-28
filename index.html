@@ -1026,7 +1026,7 @@ footer {
       <h1 class="hero-title">
         Toutes les<br><em>manifestations</em><br>en un seul endroit.
       </h1>
-      <p class="hero-desc">ManifRadar centralise les informations sur les manifestations à venir en France. Syndicats, collectifs : déposez votre événement en 2 minutes. Journalistes, citoyens : trouvez ce que vous cherchez.</p>
+      <p class="hero-desc">ManifRadar centralise les informations sur les manifestations à venir en France. Militants, syndicats, collectifs : déclarez votre événement en 2 minutes. Citoyens, journalistes : trouvez ce que vous cherchez.</p>
       <div class="hero-actions">
         <button class="btn-hero-primary" onclick="showPage('deposer')">
           <span>📢</span> Déclarer une manifestation
@@ -1194,7 +1194,7 @@ footer {
     <div class="form-success" id="form-success">
       <div class="form-success-icon">✅</div>
       <div class="form-success-title">Manifestation publiée !</div>
-      <div class="form-success-desc">Elle est maintenant visible sur ManifRadar par tous les visiteurs : journalistes, citoyens, militants.<br>Merci de contribuer à ManifRadar.</div>
+      <div class="form-success-desc">Elle est maintenant visible sur ManifRadar par tous les visiteurs : militants, citoyens, journalistes.<br>Merci de contribuer à ManifRadar.</div>
       <button class="btn-go-liste" onclick="showPage('liste')">Voir toutes les manifestations →</button>
     </div>
 
@@ -1233,12 +1233,6 @@ footer {
       <p>ManifRadar est un projet indépendant, sans publicité, sans financement extérieur. Il est entièrement gratuit, pour les organisateurs comme pour les visiteurs, et le restera.</p>
     </div>
 
-    <hr class="apropos-sep">
-
-    <div class="apropos-block">
-      <h3>Contact</h3>
-      <p>Pour toute question, signalement ou demande de retrait d'un événement, vous pouvez nous contacter à : <span style="color:var(--r3)">contact@manifradar.fr</span></p>
-    </div>
   </div>
   <footer>
     <div class="footer-logo">Manif<em>Radar</em></div>
@@ -1326,6 +1320,7 @@ function showPage(id) {
   if (lnk) lnk.classList.add('active');
   window.scrollTo({ top:0, behavior:'smooth' });
   closeDrawerMenu();
+  closeDetail();
   if (id === 'liste') chargerManifs();
   if (id === 'home') chargerStats();
   if (id === 'deposer') resetForm();
@@ -1469,7 +1464,6 @@ function ouvrirDetail(id) {
     <div class="drawer-date-band">
       <div class="drawer-date-text">${dateStrCap} · ${esc(m.heure)}</div>
       <div class="drawer-nom">${esc(m.nom)}</div>
-      <div class="drawer-orga">🏛 ${esc(m.organisateurs)}</div>
     </div>
     <div class="drawer-section">
       <div class="drawer-section-title">Lieu & horaire</div>
