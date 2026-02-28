@@ -964,6 +964,17 @@ footer {
   .admin-table td { display:block; padding:4px 0; border:none; }
   .admin-wrap { padding:32px 16px 60px; }
 }
+/* ------ SIGNALEMENT ------ */
+.btn-signaler {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  color:var(--t4); font-size:0.78rem; font-weight:500;
+  padding:7px 14px; border-radius:8px; cursor:pointer;
+  transition:all var(--transition);
+}
+.btn-signaler:hover { background:rgba(232,40,26,0.1); border-color:rgba(232,40,26,0.3); color:var(--r3); }
+.btn-signaler.signale { background:rgba(232,40,26,0.1); border-color:rgba(232,40,26,0.2); color:var(--r3); cursor:default; }
+
 :focus-visible {
   outline:2px solid var(--r);
   outline-offset:3px;
@@ -986,7 +997,7 @@ footer {
     <li><a id="nav-link-home" onclick="showPage('home')" role="button" tabindex="0">Accueil</a></li>
     <li><a id="nav-link-liste" onclick="showPage('liste')" role="button" tabindex="0">Manifestations</a></li>
     <li><a id="nav-link-apropos" onclick="showPage('apropos')" role="button" tabindex="0">À propos</a></li>
-    <li><button class="nav-cta" onclick="showPage('deposer')">📢 Déposer une manif</button></li>
+    <li><button class="nav-cta" onclick="showPage('deposer')">📢 Déclarer une manif</button></li>
   </ul>
 
   <button class="nav-hamburger" id="hamburger" aria-label="Menu" onclick="toggleDrawer()">
@@ -999,7 +1010,7 @@ footer {
   <button class="drawer-link" onclick="drawerGo('home')">Accueil</button>
   <button class="drawer-link" onclick="drawerGo('liste')">Manifestations</button>
   <button class="drawer-link" onclick="drawerGo('apropos')">À propos</button>
-  <button class="drawer-link drawer-cta" onclick="drawerGo('deposer')">📢 Déposer une manifestation</button>
+  <button class="drawer-link drawer-cta" onclick="drawerGo('deposer')">📢 Déclarer une manifestation</button>
 </div>
 
 <!-- ============================================================
@@ -1018,7 +1029,7 @@ footer {
       <p class="hero-desc">ManifRadar centralise les informations sur les manifestations à venir en France. Syndicats, collectifs : déposez votre événement en 2 minutes. Journalistes, citoyens : trouvez ce que vous cherchez.</p>
       <div class="hero-actions">
         <button class="btn-hero-primary" onclick="showPage('deposer')">
-          <span>📢</span> Déposer une manifestation
+          <span>📢</span> Déclarer une manifestation
         </button>
         <button class="btn-hero-secondary" onclick="showPage('liste')">
           Voir les manifestations →
@@ -1056,7 +1067,7 @@ footer {
         <h1 class="liste-heading">Manifestations <em>à venir</em></h1>
         <div class="liste-count" id="liste-count">Chargement…</div>
       </div>
-      <button class="btn-deposer-inline" onclick="showPage('deposer')">📢 Déposer une manif</button>
+      <button class="btn-deposer-inline" onclick="showPage('deposer')">📢 Déclarer une manif</button>
     </div>
 
     <div class="filter-bar" role="search">
@@ -1097,7 +1108,7 @@ footer {
   <div class="form-wrap">
 
     <div id="form-body">
-      <h1 class="form-heading">📢 Déposer une <em>manifestation</em></h1>
+      <h1 class="form-heading">📢 Déclarer une <em>manifestation</em></h1>
       <p class="form-subhead">Ta manifestation sera visible immédiatement sur ManifRadar, sans modération, sans compte requis. Remplis les champs marqués <span style="color:var(--r)">*</span> au minimum.</p>
 
       <div class="form-section-sep">Informations principales</div>
@@ -1177,7 +1188,7 @@ footer {
         <span>Publier la manifestation</span>
         <span>→</span>
       </button>
-      <p class="form-note">Publication immédiate · Gratuit · Sans compte · Sans modération</p>
+      <p class="form-note">Publication immédiate · Gratuit · Sans compte · </p>
     </div>
 
     <div class="form-success" id="form-success">
@@ -1211,7 +1222,7 @@ footer {
 
     <div class="apropos-block">
       <h3>Comment ça fonctionne ?</h3>
-      <p>N'importe quelle organisation, syndicat ou collectif peut déposer une manifestation en 2 minutes, sans créer de compte. La fiche est publiée immédiatement et visible par tous les visiteurs.</p>
+      <p>N'importe quelle organisation, syndicat ou collectif peut déclarer une manifestation en 2 minutes, sans créer de compte. La fiche est publiée immédiatement et visible par tous les visiteurs.</p>
       <p>ManifRadar ne modère pas les contenus et ne prend pas de position politique. La plateforme est un outil neutre au service de l'information.</p>
     </div>
 
@@ -1281,9 +1292,14 @@ footer {
     <button class="drawer-back-btn" onclick="closeDetail()">
       ← Retour à la liste
     </button>
-    <button class="drawer-share-btn" onclick="partager()" id="btn-share">
-      🔗 Partager
-    </button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="drawer-share-btn" onclick="partager()" id="btn-share">
+        🔗 Partager
+      </button>
+      <button class="btn-signaler" id="btn-signaler" onclick="signalerManif()">
+        🚩 Signaler
+      </button>
+    </div>
   </div>
   <div class="drawer-body" id="drawer-body"></div>
 </aside>
@@ -1374,7 +1390,8 @@ async function chargerManifs() {
   grid.innerHTML = '<div class="state-loading"><div class="spinner"></div><div>Chargement…</div></div>';
   try {
     const today = new Date().toISOString().split('T')[0];
-    allManifs = await supa(`manifestations?date=gte.${today}&order=date.asc`);
+    const data = await supa(`manifestations?date=gte.${today}&masquee=eq.false&order=date.asc`);
+    allManifs = data;
     afficher(allManifs);
   } catch(e) {
     grid.innerHTML = `<div class="state-empty"><div class="state-empty-icon">⚠️</div><div class="state-empty-title">Erreur</div><div class="state-empty-desc">${esc(e.message)}</div></div>`;
@@ -1386,7 +1403,7 @@ function afficher(list) {
   const count = document.getElementById('liste-count');
   count.textContent = list.length === 0 ? 'Aucune manifestation trouvée' : `${list.length} manifestation${list.length > 1 ? 's' : ''} à venir`;
   if (list.length === 0) {
-    grid.innerHTML = `<div class="state-empty"><div class="state-empty-icon">📭</div><div class="state-empty-title">Aucune manif trouvée</div><div class="state-empty-desc">Aucune manifestation ne correspond à ta recherche.<br>Sois le premier à en déposer une !</div></div>`;
+    grid.innerHTML = `<div class="state-empty"><div class="state-empty-icon">📭</div><div class="state-empty-title">Aucune manif trouvée</div><div class="state-empty-desc">Aucune manifestation ne correspond à ta recherche.<br>Sois le premier à en déclarer une !</div></div>`;
     return;
   }
   grid.innerHTML = list.map(m => cardHTML(m)).join('');
@@ -1508,6 +1525,7 @@ function ouvrirDetail(id) {
   document.getElementById('detail-drawer').classList.add('open');
   document.body.style.overflow = 'hidden';
   document.getElementById('detail-drawer').focus();
+  majBoutonSignaler(m.id);
 }
 
 function closeDetail() {
@@ -1659,7 +1677,59 @@ function verifierContenu(payload) {
   return true;
 }
 
-/* ------ ADMIN ------ */
+/* ------ SIGNALEMENT ------ */
+const SEUIL_SIGNALEMENT = 5;
+
+// Stocke les signalements faits dans cette session (anti-spam basique)
+const signalementsFaits = new Set(JSON.parse(localStorage.getItem('signalements') || '[]'));
+
+function majBoutonSignaler(id) {
+  const btn = document.getElementById('btn-signaler');
+  if (!btn) return;
+  if (signalementsFaits.has(id)) {
+    btn.classList.add('signale');
+    btn.innerHTML = '🚩 Signalé';
+    btn.disabled = true;
+  } else {
+    btn.classList.remove('signale');
+    btn.innerHTML = '🚩 Signaler';
+    btn.disabled = false;
+  }
+}
+
+async function signalerManif() {
+  if (!currentManif) return;
+  const id = currentManif.id;
+  if (signalementsFaits.has(id)) return;
+
+  try {
+    const actuel = currentManif.signalements || 0;
+    const nouveau = actuel + 1;
+    const masquer = nouveau >= SEUIL_SIGNALEMENT;
+
+    await supa(`manifestations?id=eq.${id}`, {
+      method: 'PATCH',
+      prefer: 'return=minimal',
+      body: JSON.stringify({ signalements: nouveau, ...(masquer ? { masquee: true } : {}) })
+    });
+
+    signalementsFaits.add(id);
+    localStorage.setItem('signalements', JSON.stringify([...signalementsFaits]));
+    currentManif.signalements = nouveau;
+
+    majBoutonSignaler(id);
+
+    if (masquer) {
+      toast('⚠️ Cette manifestation a été masquée suite aux signalements.');
+      allManifs = allManifs.filter(m => m.id !== id);
+      setTimeout(() => closeDetail(), 1500);
+    } else {
+      toast(`🚩 Signalement enregistré (${nouveau}/${SEUIL_SIGNALEMENT})`);
+    }
+  } catch(e) {
+    toast('❌ Erreur : ' + e.message);
+  }
+}
 const ADMIN_HASH = 'a7f3b2c9e1d4f6a8b0c2e4f7a9b1c3e5'; // hash visuel, vrai check côté JS
 const ADMIN_PWD  = 'Basrhinhautrhin6768!';
 let adminAuthentifie = false;
@@ -1694,31 +1764,58 @@ async function chargerAdmin() {
       content.innerHTML = '<div class="admin-empty">Aucune manifestation en base.</div>';
       return;
     }
+    const visibles = data.filter(m => !m.masquee);
+    const masquees = data.filter(m => m.masquee);
     content.innerHTML = `
-      <div style="margin-bottom:16px;color:var(--t4);font-size:0.82rem;">${data.length} manifestation${data.length>1?'s':''} en base</div>
+      <div style="margin-bottom:20px;color:var(--t4);font-size:0.82rem;">
+        ${visibles.length} visible${visibles.length>1?'s':''} · 
+        <span style="color:var(--r3)">${masquees.length} masquée${masquees.length>1?'s':''}</span>
+      </div>
       <table class="admin-table">
         <thead>
           <tr>
             <th>Nom</th>
             <th>Ville</th>
             <th>Date</th>
-            <th>Organisateurs</th>
+            <th>Signalements</th>
+            <th>Statut</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           ${data.map(m => `
-          <tr id="admin-row-${m.id}">
+          <tr id="admin-row-${m.id}" style="${m.masquee ? 'opacity:0.5' : ''}">
             <td class="admin-td-nom">${esc(m.nom)}</td>
             <td class="admin-td-ville">${esc(m.ville)}</td>
             <td class="admin-td-date">${new Date(m.date+'T12:00:00').toLocaleDateString('fr-FR')}</td>
-            <td>${esc(m.organisateurs||'—')}</td>
-            <td><button class="btn-delete" onclick="supprimerManif('${m.id}')">🗑 Supprimer</button></td>
+            <td style="text-align:center">${m.signalements || 0}</td>
+            <td>${m.masquee
+              ? '<span style="color:var(--r3);font-size:0.78rem;font-weight:600;">🚫 Masquée</span>'
+              : '<span style="color:var(--vert);font-size:0.78rem;font-weight:600;">✓ Visible</span>'
+            }</td>
+            <td style="display:flex;gap:6px;flex-wrap:wrap;">
+              ${m.masquee ? `<button class="btn-delete" style="background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:#22c55e" onclick="retablirManif('${m.id}')">↩ Rétablir</button>` : ''}
+              <button class="btn-delete" onclick="supprimerManif('${m.id}')">🗑 Supprimer</button>
+            </td>
           </tr>`).join('')}
         </tbody>
       </table>`;
   } catch(e) {
     content.innerHTML = `<div class="admin-empty">Erreur : ${esc(e.message)}</div>`;
+  }
+}
+
+async function retablirManif(id) {
+  try {
+    await supa(`manifestations?id=eq.${id}`, {
+      method: 'PATCH',
+      prefer: 'return=minimal',
+      body: JSON.stringify({ masquee: false, signalements: 0 })
+    });
+    toast('✅ Manifestation rétablie');
+    chargerAdmin();
+  } catch(e) {
+    toast('❌ Erreur : ' + e.message);
   }
 }
 
