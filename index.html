@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="ManifRadar — Trouvez et déposez des manifestations partout en France. Plateforme participative, gratuite et indépendante.">
+<meta name="description" content="ManifRadar — Trouvez et déclarez des manifestations partout en France. Plateforme participative, gratuite et indépendante.">
 <meta name="theme-color" content="#0D0D0D">
 <title>ManifRadar — Les manifestations en France</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -988,7 +988,7 @@ footer {
      NAV
      ============================================================ -->
 <nav id="nav">
-  <div class="nav-logo" onclick="showPage('liste')" role="button" tabindex="0">
+  <div class="nav-logo" onclick="showPage('home')" role="button" tabindex="0">
     <div class="nav-logo-pulse"></div>
     <div class="nav-logo-text">Manif<em>Radar</em></div>
   </div>
@@ -1651,7 +1651,7 @@ document.addEventListener('keydown', e => {
 const MOTS_INTERDITS = [
   // Insultes & haine
   'merde','connard','connasse','salope','pute','bâtard','batard',
-  'fdp','enculé','encule','nique','niquer','ntm','pd ','pédé','pede',
+  'fdp','enculé','encule','nique','niquer','n.t.m','pd ','pédé','pede',
   'nazi','fasciste','raciste','antisémite','antisemite',
   'negro','nègre','negre','bounty','bougnoule','youpin','feuj',
   'islamophobie','homophobe',
@@ -1666,7 +1666,12 @@ const MOTS_INTERDITS = [
 
 function contientMotInterdit(texte) {
   const t = normalise(texte);
-  return MOTS_INTERDITS.some(m => t.includes(normalise(m)));
+  return MOTS_INTERDITS.some(m => {
+    const mot = normalise(m.trim());
+    // On vérifie que le mot est entouré de séparateurs (espace, ponctuation, début/fin)
+    const regex = new RegExp('(^|[\\s,;.!?\'"-])' + mot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[\\s,;.!?\'"-])', 'i');
+    return regex.test(' ' + t + ' ');
+  });
 }
 
 function verifierContenu(payload) {
