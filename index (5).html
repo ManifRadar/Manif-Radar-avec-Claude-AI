@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ManifRadar — Trouvez et déposez des manifestations partout en France. Plateforme participative, gratuite et indépendante.">
+<meta name="theme-color" content="#0D0D0D">
+<title>ManifRadar — Les manifestations en France</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   VARIABLES & RESET
+   ============================================================ */
+:root {
+  --r: #E8281A;
+  --r2: #C01F14;
+  --r3: #FF4035;
+  --noir: #0A0A0A;
+  --s1: #141414;
+  --s2: #1E1E1E;
+  --s3: #2A2A2A;
+  --s4: #3A3A3A;
+  --t1: #FFFFFF;
+  --t2: #C8C8C8;
+  --t3: #888888;
+  --t4: #555555;
+  --vert: #22C55E;
+  --nav-h: 64px;
+  --radius: 12px;
+  --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  font-family:'Barlow', sans-serif;
+  background:var(--noir);
+  color:var(--t1);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+img { max-width:100%; }
+button { font-family:inherit; cursor:pointer; }
+input, textarea, select { font-family:inherit; }
+a { color:inherit; text-decoration:none; }
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(--s1); }
+::-webkit-scrollbar-thumb { background:var(--s3); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--s4); }
+
+/* ============================================================
+   NAV
+   ============================================================ */
+#nav {
+  position:fixed; top:0; left:0; right:0; z-index:1000;
+  height:var(--nav-h);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px;
+  background:rgba(10,10,10,0.96);
+  backdrop-filter:blur(16px) saturate(180%);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  transition:border-color var(--transition);
+}
+
+.nav-logo {
+  display:flex; align-items:center; gap:10px;
+  cursor:pointer; user-select:none;
+}
+.nav-logo-pulse {
+  width:12px; height:12px;
+  background:var(--r);
+  border-radius:50%;
+  flex-shrink:0;
+  animation:pulse 2.4s ease infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(232,40,26,0.7); }
+  50% { box-shadow:0 0 0 10px rgba(232,40,26,0); }
+}
+.nav-logo-text {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1.5rem; font-weight:900;
+  letter-spacing:0.02em;
+  line-height:1;
+}
+.nav-logo-text em { font-style:normal; color:var(--r); }
+
+.nav-links {
+  display:flex; align-items:center; gap:4px;
+  list-style:none;
+}
+.nav-links li a, .nav-links li button {
+  display:block;
+  padding:8px 14px;
+  border-radius:8px;
+  font-size:0.875rem; font-weight:500;
+  color:var(--t3);
+  background:none; border:none;
+  transition:color var(--transition), background var(--transition);
+  cursor:pointer;
+}
+.nav-links li a:hover, .nav-links li button:hover { color:var(--t1); background:rgba(255,255,255,0.06); }
+.nav-links li a.active { color:var(--t1); }
+
+.nav-cta {
+  background:var(--r) !important;
+  color:var(--t1) !important;
+  font-weight:600 !important;
+  padding:8px 18px !important;
+  border-radius:8px !important;
+  transition:background var(--transition), transform var(--transition) !important;
+}
+.nav-cta:hover { background:var(--r2) !important; transform:translateY(-1px); }
+
+/* Hamburger mobile */
+.nav-hamburger {
+  display:none;
+  flex-direction:column; gap:5px; justify-content:center; align-items:center;
+  width:40px; height:40px;
+  background:none; border:none;
+  cursor:pointer; border-radius:8px;
+  transition:background var(--transition);
+}
+.nav-hamburger:hover { background:rgba(255,255,255,0.06); }
+.nav-hamburger span {
+  display:block; width:22px; height:2px;
+  background:var(--t1); border-radius:2px;
+  transition:transform var(--transition), opacity var(--transition);
+}
+.nav-hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity:0; }
+.nav-hamburger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+
+/* Drawer mobile */
+#nav-drawer {
+  display:none;
+  position:fixed; top:var(--nav-h); left:0; right:0; bottom:0; z-index:999;
+  background:rgba(10,10,10,0.98);
+  flex-direction:column;
+  padding:32px 24px;
+  gap:8px;
+  transform:translateY(-10px);
+  opacity:0;
+  transition:opacity 0.2s, transform 0.2s;
+}
+#nav-drawer.open {
+  display:flex;
+  opacity:1;
+  transform:translateY(0);
+}
+.drawer-link {
+  display:block;
+  padding:16px 20px;
+  border-radius:var(--radius);
+  font-size:1.2rem; font-weight:600;
+  color:var(--t2);
+  background:none; border:none; text-align:left;
+  width:100%;
+  transition:color var(--transition), background var(--transition);
+  font-family:'Barlow Condensed', sans-serif;
+  letter-spacing:0.03em;
+}
+.drawer-link:hover { color:var(--t1); background:var(--s2); }
+.drawer-cta {
+  margin-top:16px;
+  background:var(--r) !important;
+  color:var(--t1) !important;
+  text-align:center !important;
+  font-size:1.1rem !important;
+}
+.drawer-cta:hover { background:var(--r2) !important; }
+
+/* ============================================================
+   PAGES SYSTÈME
+   ============================================================ */
+.page { display:none; padding-top:var(--nav-h); }
+.page.active { display:block; }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+#hero {
+  min-height:calc(100vh - var(--nav-h));
+  display:grid;
+  grid-template-rows:1fr auto;
+  position:relative;
+  overflow:hidden;
+}
+
+.hero-bg {
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 100% 40%, rgba(232,40,26,0.15) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 0% 100%, rgba(232,40,26,0.07) 0%, transparent 60%);
+  pointer-events:none;
+}
+
+.hero-noise {
+  position:absolute; inset:0;
+  opacity:0.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events:none;
+}
+
+.hero-lines {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;
+}
+
+.hero-content {
+  display:flex; flex-direction:column; justify-content:center;
+  padding:80px 24px 40px;
+  position:relative; z-index:1;
+  max-width:1100px; margin:0 auto; width:100%;
+}
+
+.hero-label {
+  display:inline-flex; align-items:center; gap:8px;
+  margin-bottom:28px;
+  font-size:0.75rem; font-weight:600;
+  letter-spacing:0.12em; text-transform:uppercase;
+  color:var(--r3);
+  opacity:0; animation:fadeUp 0.6s 0.1s ease forwards;
+}
+.hero-label::before {
+  content:'';
+  display:block; width:24px; height:2px;
+  background:var(--r);
+}
+
+.hero-title {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:clamp(3.5rem, 9vw, 7rem);
+  font-weight:900;
+  line-height:0.95;
+  letter-spacing:-0.01em;
+  text-transform:uppercase;
+  margin-bottom:28px;
+  opacity:0; animation:fadeUp 0.6s 0.2s ease forwards;
+}
+.hero-title em {
+  font-style:italic;
+  color:var(--r);
+  display:block;
+}
+
+.hero-desc {
+  max-width:520px;
+  font-size:1.05rem; font-weight:300; line-height:1.75;
+  color:var(--t3);
+  margin-bottom:40px;
+  opacity:0; animation:fadeUp 0.6s 0.3s ease forwards;
+}
+
+.hero-actions {
+  display:flex; gap:12px; flex-wrap:wrap;
+  opacity:0; animation:fadeUp 0.6s 0.4s ease forwards;
+}
+
+.btn-hero-primary {
+  display:inline-flex; align-items:center; gap:10px;
+  padding:14px 28px;
+  background:var(--r); color:var(--t1);
+  border:2px solid var(--r);
+  border-radius:var(--radius);
+  font-size:0.95rem; font-weight:600;
+  transition:all var(--transition);
+}
+.btn-hero-primary:hover { background:var(--r2); border-color:var(--r2); transform:translateY(-2px); box-shadow:0 8px 32px rgba(232,40,26,0.35); }
+
+.btn-hero-secondary {
+  display:inline-flex; align-items:center; gap:10px;
+  padding:14px 28px;
+  background:transparent; color:var(--t1);
+  border:2px solid rgba(255,255,255,0.15);
+  border-radius:var(--radius);
+  font-size:0.95rem; font-weight:600;
+  transition:all var(--transition);
+}
+.btn-hero-secondary:hover { border-color:rgba(255,255,255,0.4); background:rgba(255,255,255,0.05); }
+
+.hero-stats {
+  display:flex; gap:0;
+  border-top:1px solid rgba(255,255,255,0.07);
+  position:relative; z-index:1;
+  opacity:0; animation:fadeUp 0.6s 0.5s ease forwards;
+}
+.stat-block {
+  flex:1;
+  padding:28px 24px;
+  border-right:1px solid rgba(255,255,255,0.07);
+}
+.stat-block:last-child { border-right:none; }
+.stat-val {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:2.2rem; font-weight:900;
+  color:var(--r);
+  line-height:1;
+  margin-bottom:4px;
+}
+.stat-lbl {
+  font-size:0.78rem; font-weight:400;
+  color:var(--t4);
+  letter-spacing:0.04em;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* ============================================================
+   PAGE LISTE
+   ============================================================ */
+.liste-wrap {
+  max-width:1200px; margin:0 auto;
+  padding:48px 24px 80px;
+}
+
+.liste-top {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:16px; flex-wrap:wrap;
+  margin-bottom:32px;
+}
+
+.liste-heading {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:2.4rem; font-weight:900;
+  text-transform:uppercase; letter-spacing:0.01em;
+  line-height:1;
+}
+.liste-heading em { font-style:normal; color:var(--r); }
+
+.liste-count {
+  font-size:0.8rem; font-weight:500; color:var(--t4);
+  margin-top:8px;
+}
+
+.btn-deposer-inline {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:12px 20px;
+  background:var(--r); color:var(--t1);
+  border:none; border-radius:var(--radius);
+  font-size:0.875rem; font-weight:600;
+  transition:all var(--transition);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.btn-deposer-inline:hover { background:var(--r2); transform:translateY(-1px); }
+
+/* Filtre */
+.filter-bar {
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:32px;
+}
+.filter-input-wrap {
+  flex:1; position:relative;
+}
+.filter-icon {
+  position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  font-size:1rem; pointer-events:none;
+  color:var(--t4);
+}
+.filter-input {
+  width:100%;
+  background:var(--s1); border:1px solid var(--s3);
+  color:var(--t1);
+  padding:12px 14px 12px 42px;
+  border-radius:var(--radius);
+  font-size:0.9rem; font-weight:400;
+  outline:none;
+  transition:border-color var(--transition), background var(--transition);
+}
+.filter-input:focus { border-color:var(--r); background:rgba(232,40,26,0.04); }
+.filter-input::placeholder { color:var(--t4); }
+.filter-clear {
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  background:none; border:none;
+  color:var(--t4); font-size:1rem;
+  cursor:pointer; padding:4px;
+  display:none;
+  transition:color var(--transition);
+}
+.filter-clear:hover { color:var(--t1); }
+.filter-clear.show { display:block; }
+
+/* Grille */
+.manifs-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+  gap:16px;
+}
+
+/* Card */
+.manif-card {
+  background:var(--s1);
+  border:1px solid var(--s3);
+  border-radius:var(--radius);
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+  display:flex; flex-direction:column;
+  position:relative;
+}
+.manif-card::after {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0; height:2px;
+  background:var(--r);
+  transform:scaleX(0); transform-origin:left;
+  transition:transform var(--transition);
+}
+.manif-card:hover { transform:translateY(-4px); border-color:rgba(232,40,26,0.3); box-shadow:0 16px 48px rgba(0,0,0,0.4); }
+.manif-card:hover::after { transform:scaleX(1); }
+
+.card-date-strip {
+  background:var(--r);
+  padding:10px 16px;
+  display:flex; align-items:baseline; gap:6px;
+}
+.card-date-day {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:2rem; font-weight:900; line-height:1;
+}
+.card-date-rest {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.04em;
+  opacity:0.85;
+}
+
+.card-body { padding:16px; flex:1; display:flex; flex-direction:column; gap:10px; }
+
+.card-ville-tag {
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:4px;
+  background:rgba(255,255,255,0.06);
+  font-size:0.72rem; font-weight:600;
+  letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--t3);
+  align-self:flex-start;
+}
+
+.card-nom {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1.2rem; font-weight:700;
+  line-height:1.25; letter-spacing:0.01em;
+  text-transform:uppercase;
+  color:var(--t1);
+}
+
+.card-orga {
+  font-size:0.82rem; font-weight:500;
+  color:var(--r3);
+}
+
+.card-meta {
+  margin-top:auto;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,0.06);
+  display:flex; flex-direction:column; gap:6px;
+}
+.card-meta-row {
+  display:flex; align-items:center; gap:8px;
+  font-size:0.8rem; color:var(--t3); font-weight:400;
+}
+.card-meta-icon { width:16px; text-align:center; font-size:0.85rem; flex-shrink:0; }
+
+/* Loading / empty */
+.state-loading {
+  grid-column:1/-1;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:80px 24px; gap:20px; color:var(--t4);
+}
+.spinner {
+  width:36px; height:36px;
+  border:3px solid rgba(255,255,255,0.08);
+  border-top-color:var(--r);
+  border-radius:50%;
+  animation:spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.state-empty {
+  grid-column:1/-1;
+  text-align:center; padding:80px 24px;
+}
+.state-empty-icon { font-size:3.5rem; margin-bottom:16px; }
+.state-empty-title {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1.6rem; font-weight:800; text-transform:uppercase;
+  margin-bottom:8px;
+}
+.state-empty-desc { color:var(--t4); font-size:0.9rem; line-height:1.6; }
+
+/* ============================================================
+   DETAIL DRAWER (slide from right)
+   ============================================================ */
+#detail-backdrop {
+  display:none;
+  position:fixed; inset:0; z-index:900;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(4px);
+  opacity:0; transition:opacity 0.3s;
+}
+#detail-backdrop.open { display:block; opacity:1; }
+
+#detail-drawer {
+  position:fixed; top:0; right:0; bottom:0; z-index:901;
+  width:min(560px, 100vw);
+  background:var(--s1);
+  border-left:1px solid var(--s3);
+  display:flex; flex-direction:column;
+  transform:translateX(100%);
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  overflow:hidden;
+}
+#detail-drawer.open { transform:translateX(0); }
+
+.drawer-header-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid var(--s3);
+  flex-shrink:0;
+  position:sticky; top:0;
+  background:var(--s1);
+  z-index:10;
+}
+.drawer-back-btn {
+  display:flex; align-items:center; gap:8px;
+  background:var(--r); border:none;
+  color:white; font-size:0.9rem; font-weight:700;
+  transition:all var(--transition);
+  padding:10px 18px; border-radius:8px;
+  cursor:pointer;
+  letter-spacing:0.02em;
+}
+.drawer-back-btn:hover { background:var(--r2); }
+
+.drawer-share-btn {
+  display:flex; align-items:center; gap:6px;
+  background:var(--s2); border:1px solid var(--s3);
+  color:var(--t2); font-size:0.82rem; font-weight:500;
+  padding:7px 14px; border-radius:8px;
+  transition:all var(--transition);
+}
+.drawer-share-btn:hover { background:var(--s3); color:var(--t1); }
+
+.drawer-body {
+  flex:1; overflow-y:auto;
+  padding:0 0 40px;
+}
+
+.drawer-date-band {
+  background:var(--r);
+  padding:20px 24px;
+}
+.drawer-date-text {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1.1rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.05em;
+  opacity:0.9; margin-bottom:4px;
+}
+.drawer-nom {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1.9rem; font-weight:900;
+  text-transform:uppercase; letter-spacing:0.01em;
+  line-height:1.1; margin-bottom:8px;
+}
+.drawer-orga { font-size:0.88rem; opacity:0.85; }
+
+.drawer-section { padding:20px 24px; border-bottom:1px solid var(--s3); }
+.drawer-section:last-child { border-bottom:none; }
+.drawer-section-title {
+  font-size:0.7rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--t4); margin-bottom:14px;
+}
+.drawer-info-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:12px;
+}
+.drawer-info-block {
+  background:var(--s2); border-radius:10px; padding:14px;
+}
+.drawer-info-label {
+  font-size:0.72rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--t4); margin-bottom:6px;
+}
+.drawer-info-val { font-size:0.9rem; font-weight:500; line-height:1.4; }
+
+.drawer-revendications {
+  background:rgba(232,40,26,0.07);
+  border:1px solid rgba(232,40,26,0.18);
+  border-radius:10px; padding:16px;
+}
+.drawer-revendications-title {
+  font-size:0.72rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--r3); margin-bottom:10px;
+}
+.drawer-revendications-text {
+  font-size:0.9rem; line-height:1.7; color:var(--t2); font-weight:300;
+}
+
+.drawer-trajet {
+  background:var(--s2); border-radius:10px; padding:16px;
+}
+.drawer-trajet-text { font-size:0.88rem; line-height:1.7; color:var(--t2); font-weight:300; }
+
+/* ============================================================
+   FORMULAIRE
+   ============================================================ */
+.form-wrap {
+  max-width:680px; margin:0 auto;
+  padding:48px 24px 80px;
+}
+
+.form-heading {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:2.6rem; font-weight:900;
+  text-transform:uppercase; letter-spacing:0.01em;
+  line-height:1; margin-bottom:10px;
+}
+.form-heading em { font-style:normal; color:var(--r); }
+.form-subhead { font-size:0.95rem; color:var(--t4); line-height:1.6; margin-bottom:40px; font-weight:300; }
+
+.form-section-sep {
+  font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--t4);
+  display:flex; align-items:center; gap:12px;
+  margin:32px 0 20px;
+}
+.form-section-sep::after { content:''; flex:1; height:1px; background:var(--s3); }
+
+.form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+.fgroup { display:flex; flex-direction:column; gap:7px; }
+.fgroup label {
+  font-size:0.78rem; font-weight:600;
+  letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--t4);
+  display:flex; align-items:center; gap:4px;
+}
+.freq { color:var(--r); }
+.fhint { font-size:0.75rem; color:var(--t4); font-weight:300; letter-spacing:0; text-transform:none; }
+
+.fgroup input, .fgroup textarea {
+  background:var(--s1);
+  border:1px solid var(--s3);
+  border-radius:var(--radius);
+  color:var(--t1);
+  font-size:0.95rem; font-weight:400;
+  padding:13px 15px;
+  outline:none;
+  transition:border-color var(--transition), background var(--transition), box-shadow var(--transition);
+  width:100%;
+}
+.fgroup input:focus, .fgroup textarea:focus {
+  border-color:var(--r);
+  background:rgba(232,40,26,0.04);
+  box-shadow:0 0 0 3px rgba(232,40,26,0.12);
+}
+.fgroup input::placeholder, .fgroup textarea::placeholder { color:var(--t4); }
+.fgroup textarea { resize:vertical; min-height:120px; }
+.fgroup input.error { border-color:#FF6B6B; }
+
+.date-wrap { position:relative; }
+.date-display {
+  width:100%;
+  background:var(--s1); border:1px solid var(--s3);
+  border-radius:var(--radius);
+  color:var(--t1); font-size:0.95rem; font-weight:400;
+  padding:13px 44px 13px 15px;
+  cursor:pointer;
+  display:flex; align-items:center;
+  transition:border-color var(--transition), background var(--transition), box-shadow var(--transition);
+  user-select:none;
+}
+.date-display:hover { border-color:var(--s4); }
+.date-display.open, .date-display:focus { border-color:var(--r); background:rgba(232,40,26,0.04); box-shadow:0 0 0 3px rgba(232,40,26,0.12); outline:none; }
+.date-display.placeholder { color:var(--t4); }
+.date-display-icon {
+  position:absolute; right:13px; top:50%; transform:translateY(-50%);
+  font-size:1.1rem; pointer-events:none;
+}
+.date-display.error { border-color:#FF6B6B; }
+
+/* Calendrier dropdown */
+.cal-dropdown {
+  display:none;
+  position:absolute; top:calc(100% + 6px); left:0; z-index:500;
+  background:var(--s2); border:1px solid var(--s3);
+  border-radius:var(--radius);
+  padding:16px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.6);
+  min-width:280px;
+  animation:calIn 0.18s ease;
+}
+.cal-dropdown.open { display:block; }
+@keyframes calIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+.cal-nav {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px;
+}
+.cal-nav-btn {
+  background:var(--s3); border:none; color:var(--t2);
+  width:32px; height:32px; border-radius:8px;
+  font-size:1rem; display:flex; align-items:center; justify-content:center;
+  transition:background var(--transition), color var(--transition);
+}
+.cal-nav-btn:hover { background:var(--s4); color:var(--t1); }
+.cal-month-label {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+}
+
+.cal-grid {
+  display:grid; grid-template-columns:repeat(7,1fr); gap:2px;
+}
+.cal-dow {
+  text-align:center; font-size:0.68rem; font-weight:700;
+  letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--t4); padding:4px 0 8px;
+}
+.cal-day {
+  text-align:center; padding:7px 2px;
+  border-radius:8px; font-size:0.85rem; font-weight:500;
+  cursor:pointer; color:var(--t2);
+  transition:background var(--transition), color var(--transition);
+  border:none; background:none;
+}
+.cal-day:hover:not(.empty):not(.past) { background:var(--s3); color:var(--t1); }
+.cal-day.past { color:var(--t4); cursor:not-allowed; }
+.cal-day.today { color:var(--r3); font-weight:700; }
+.cal-day.selected { background:var(--r); color:#fff; font-weight:700; }
+.cal-day.selected:hover { background:var(--r2); }
+.cal-day.empty { cursor:default; }
+
+.form-submit {
+  width:100%; margin-top:32px;
+  background:var(--r); color:var(--t1);
+  border:none; border-radius:var(--radius);
+  padding:16px 24px;
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1.25rem; font-weight:800;
+  letter-spacing:0.05em; text-transform:uppercase;
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  transition:all var(--transition);
+}
+.form-submit:hover:not(:disabled) { background:var(--r2); transform:translateY(-2px); box-shadow:0 10px 36px rgba(232,40,26,0.35); }
+.form-submit:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
+.form-note { font-size:0.78rem; color:var(--t4); text-align:center; margin-top:14px; line-height:1.6; }
+
+.form-success {
+  display:none;
+  text-align:center; padding:60px 24px;
+}
+.form-success-icon { font-size:4rem; margin-bottom:20px; }
+.form-success-title {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:2rem; font-weight:900; text-transform:uppercase;
+  color:var(--vert); margin-bottom:12px;
+}
+.form-success-desc { color:var(--t4); line-height:1.7; margin-bottom:32px; }
+.btn-go-liste {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:13px 24px;
+  background:var(--r); color:var(--t1); border:none;
+  border-radius:var(--radius); font-size:0.9rem; font-weight:600;
+  transition:all var(--transition);
+}
+.btn-go-liste:hover { background:var(--r2); }
+
+/* ============================================================
+   À PROPOS
+   ============================================================ */
+.apropos-wrap {
+  max-width:760px; margin:0 auto;
+  padding:60px 24px 80px;
+}
+.apropos-heading {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:2.8rem; font-weight:900; text-transform:uppercase;
+  line-height:1; margin-bottom:40px;
+}
+.apropos-heading em { font-style:normal; color:var(--r); }
+.apropos-block { margin-bottom:40px; }
+.apropos-block h3 {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1.3rem; font-weight:800; text-transform:uppercase;
+  letter-spacing:0.04em; color:var(--r3);
+  margin-bottom:12px;
+}
+.apropos-block p { font-size:0.95rem; line-height:1.8; color:var(--t3); font-weight:300; }
+.apropos-block p + p { margin-top:12px; }
+.apropos-sep { border:none; border-top:1px solid var(--s3); margin:40px 0; }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  z-index:2000;
+  background:var(--s2); border:1px solid var(--s3);
+  border-radius:100px;
+  padding:12px 24px;
+  font-size:0.875rem; font-weight:500;
+  white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  opacity:0; pointer-events:none;
+  transition:opacity 0.25s, transform 0.25s;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  border-top:1px solid var(--s3);
+  padding:32px 24px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+}
+.footer-logo {
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1.2rem; font-weight:900; letter-spacing:0.02em;
+  display:flex; align-items:center; gap:8px;
+}
+.footer-logo em { font-style:normal; color:var(--r); }
+.footer-copy { font-size:0.78rem; color:var(--t4); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:768px) {
+  :root { --nav-h:56px; }
+
+  .nav-links { display:none; }
+  .nav-hamburger { display:flex; }
+
+  .hero-content { padding:40px 20px 32px; }
+  .hero-stats { flex-direction:column; }
+  .stat-block { border-right:none; border-bottom:1px solid rgba(255,255,255,0.07); padding:20px; }
+  .stat-block:last-child { border-bottom:none; }
+
+  .liste-wrap { padding:32px 16px 60px; }
+  .liste-top { flex-direction:column; }
+  .btn-deposer-inline { width:100%; justify-content:center; }
+  .manifs-grid { grid-template-columns:1fr; }
+
+  #detail-drawer { width:100vw; border-left:none; }
+  .drawer-info-grid { grid-template-columns:1fr; }
+
+  .form-wrap { padding:32px 16px 60px; }
+  .form-row-2 { grid-template-columns:1fr; }
+
+  .apropos-wrap { padding:40px 16px 60px; }
+
+  footer { padding:24px 16px; flex-direction:column; align-items:flex-start; }
+}
+
+@media (min-width:769px) and (max-width:1024px) {
+  .manifs-grid { grid-template-columns:repeat(2, 1fr); }
+}
+
+/* ============================================================
+   PAGE ADMIN
+   ============================================================ */
+.admin-wrap {
+  max-width:900px; margin:0 auto;
+  padding:48px 24px 80px;
+}
+.admin-login {
+  max-width:400px; margin:80px auto 0;
+  text-align:center;
+}
+.admin-login-title {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:2rem; font-weight:900; text-transform:uppercase;
+  margin-bottom:8px;
+}
+.admin-login-sub { color:var(--t4); font-size:0.88rem; margin-bottom:32px; }
+.admin-login-form { display:flex; flex-direction:column; gap:12px; }
+.admin-login-form input {
+  background:var(--s1); border:1px solid var(--s3);
+  border-radius:var(--radius); color:var(--t1);
+  font-size:0.95rem; padding:13px 15px; outline:none;
+  transition:border-color var(--transition);
+}
+.admin-login-form input:focus { border-color:var(--r); }
+.admin-login-btn {
+  background:var(--r); color:white; border:none;
+  border-radius:var(--radius); padding:13px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.1rem; font-weight:800; text-transform:uppercase;
+  cursor:pointer; transition:background var(--transition);
+}
+.admin-login-btn:hover { background:var(--r2); }
+.admin-login-error {
+  color:#ff6b6b; font-size:0.82rem; margin-top:4px; display:none;
+}
+
+.admin-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:32px; flex-wrap:wrap; gap:12px;
+}
+.admin-title {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:2rem; font-weight:900; text-transform:uppercase;
+}
+.admin-title em { font-style:normal; color:var(--r); }
+.admin-logout {
+  background:var(--s2); border:1px solid var(--s3);
+  color:var(--t3); font-size:0.82rem; font-weight:500;
+  padding:8px 16px; border-radius:8px; cursor:pointer;
+  transition:all var(--transition);
+}
+.admin-logout:hover { color:var(--t1); background:var(--s3); }
+
+.admin-table {
+  width:100%; border-collapse:collapse;
+  font-size:0.85rem;
+}
+.admin-table th {
+  text-align:left; padding:10px 12px;
+  background:var(--s2);
+  font-size:0.7rem; font-weight:700;
+  letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--t4);
+  border-bottom:1px solid var(--s3);
+}
+.admin-table td {
+  padding:12px; border-bottom:1px solid rgba(255,255,255,0.04);
+  vertical-align:top; line-height:1.4;
+  color:var(--t2);
+}
+.admin-table tr:hover td { background:rgba(255,255,255,0.02); }
+.admin-td-nom { font-weight:600; color:var(--t1); max-width:260px; }
+.admin-td-ville { white-space:nowrap; }
+.admin-td-date { white-space:nowrap; color:var(--t3); }
+.btn-delete {
+  background:rgba(232,40,26,0.12); border:1px solid rgba(232,40,26,0.3);
+  color:var(--r3); font-size:0.8rem; font-weight:600;
+  padding:6px 14px; border-radius:6px; cursor:pointer;
+  transition:all var(--transition); white-space:nowrap;
+}
+.btn-delete:hover { background:var(--r); color:white; border-color:var(--r); }
+
+.admin-empty {
+  text-align:center; padding:60px 24px;
+  color:var(--t4); font-size:0.9rem;
+}
+
+@media(max-width:768px) {
+  .admin-table thead { display:none; }
+  .admin-table tr { display:block; margin-bottom:12px; background:var(--s1); border-radius:var(--radius); padding:12px; border:1px solid var(--s3); }
+  .admin-table td { display:block; padding:4px 0; border:none; }
+  .admin-wrap { padding:32px 16px 60px; }
+}
+:focus-visible {
+  outline:2px solid var(--r);
+  outline-offset:3px;
+  border-radius:4px;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav id="nav">
+  <div class="nav-logo" onclick="showPage('liste')" role="button" tabindex="0">
+    <div class="nav-logo-pulse"></div>
+    <div class="nav-logo-text">Manif<em>Radar</em></div>
+  </div>
+
+  <ul class="nav-links" role="list">
+    <li><a id="nav-link-home" onclick="showPage('home')" role="button" tabindex="0">Accueil</a></li>
+    <li><a id="nav-link-liste" onclick="showPage('liste')" role="button" tabindex="0">Manifestations</a></li>
+    <li><a id="nav-link-apropos" onclick="showPage('apropos')" role="button" tabindex="0">À propos</a></li>
+    <li><button class="nav-cta" onclick="showPage('deposer')">📢 Déposer une manif</button></li>
+  </ul>
+
+  <button class="nav-hamburger" id="hamburger" aria-label="Menu" onclick="toggleDrawer()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Drawer mobile -->
+<div id="nav-drawer" role="dialog" aria-label="Menu navigation">
+  <button class="drawer-link" onclick="drawerGo('home')">Accueil</button>
+  <button class="drawer-link" onclick="drawerGo('liste')">Manifestations</button>
+  <button class="drawer-link" onclick="drawerGo('apropos')">À propos</button>
+  <button class="drawer-link drawer-cta" onclick="drawerGo('deposer')">📢 Déposer une manifestation</button>
+</div>
+
+<!-- ============================================================
+     PAGE ACCUEIL
+     ============================================================ -->
+<div class="page active" id="page-home">
+  <section id="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-noise" aria-hidden="true"></div>
+    <div class="hero-lines" aria-hidden="true"></div>
+    <div class="hero-content">
+      <div class="hero-label" aria-hidden="true">Plateforme participative · France</div>
+      <h1 class="hero-title">
+        Toutes les<br><em>manifestations</em><br>en un seul endroit.
+      </h1>
+      <p class="hero-desc">ManifRadar centralise les informations sur les manifestations à venir en France. Syndicats, collectifs : déposez votre événement en 2 minutes. Journalistes, citoyens : trouvez ce que vous cherchez.</p>
+      <div class="hero-actions">
+        <button class="btn-hero-primary" onclick="showPage('deposer')">
+          <span>📢</span> Déposer une manifestation
+        </button>
+        <button class="btn-hero-secondary" onclick="showPage('liste')">
+          Voir les manifestations →
+        </button>
+      </div>
+    </div>
+    <div class="hero-stats" role="region" aria-label="Statistiques">
+      <div class="stat-block">
+        <div class="stat-val" id="stat-nb">—</div>
+        <div class="stat-lbl">Manifestations à venir</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-val" id="stat-villes">—</div>
+        <div class="stat-lbl">Villes couvertes</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-val">🆓</div>
+        <div class="stat-lbl">Gratuit · Sans inscription</div>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <div class="footer-logo">Manif<em>Radar</em></div>
+    <div class="footer-copy">© 2026 ManifRadar · Plateforme indépendante</div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     PAGE LISTE
+     ============================================================ -->
+<div class="page" id="page-liste">
+  <main class="liste-wrap">
+    <div class="liste-top">
+      <div>
+        <h1 class="liste-heading">Manifestations <em>à venir</em></h1>
+        <div class="liste-count" id="liste-count">Chargement…</div>
+      </div>
+      <button class="btn-deposer-inline" onclick="showPage('deposer')">📢 Déposer une manif</button>
+    </div>
+
+    <div class="filter-bar" role="search">
+      <div class="filter-input-wrap">
+        <span class="filter-icon" aria-hidden="true">🔍</span>
+        <input
+          class="filter-input"
+          id="filter-ville"
+          type="search"
+          placeholder="Filtrer par ville ou mot-clé…"
+          oninput="filtrer()"
+          onkeyup="filtrer()"
+          onchange="filtrer()"
+          aria-label="Rechercher une manifestation"
+          autocomplete="off"
+        >
+        <button class="filter-clear" id="filter-clear" onclick="clearFilter()" aria-label="Effacer la recherche">✕</button>
+      </div>
+    </div>
+
+    <div class="manifs-grid" id="manifs-grid" role="list">
+      <div class="state-loading">
+        <div class="spinner" role="status" aria-label="Chargement"></div>
+        <div>Chargement des manifestations…</div>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <div class="footer-logo">Manif<em>Radar</em></div>
+    <div class="footer-copy">© 2026 ManifRadar</div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     PAGE FORMULAIRE
+     ============================================================ -->
+<div class="page" id="page-deposer">
+  <div class="form-wrap">
+
+    <div id="form-body">
+      <h1 class="form-heading">📢 Déposer une <em>manifestation</em></h1>
+      <p class="form-subhead">Ta manifestation sera visible immédiatement sur ManifRadar, sans modération, sans compte requis. Remplis les champs marqués <span style="color:var(--r)">*</span> au minimum.</p>
+
+      <div class="form-section-sep">Informations principales</div>
+
+      <div class="fgroup" style="margin-bottom:16px">
+        <label for="f-nom">Nom de la manifestation <span class="freq">*</span></label>
+        <input id="f-nom" type="text" placeholder="Ex : Grève nationale contre la réforme des retraites" maxlength="200">
+      </div>
+
+      <div class="form-row-2">
+        <div class="fgroup">
+          <label for="f-date-display">Date <span class="freq">*</span></label>
+          <div class="date-wrap" id="cal-wrap">
+            <input type="hidden" id="f-date">
+            <div class="date-display placeholder" id="f-date-display" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false" onclick="toggleCal()" onkeydown="if(event.key==='Enter'||event.key===' ')toggleCal()">
+              Choisir une date
+            </div>
+            <span class="date-display-icon" aria-hidden="true">📅</span>
+            <div class="cal-dropdown" id="cal-dropdown" role="dialog" aria-label="Calendrier">
+              <div class="cal-nav">
+                <button type="button" class="cal-nav-btn" onclick="calMove(-1)" aria-label="Mois précédent">‹</button>
+                <div class="cal-month-label" id="cal-month-label"></div>
+                <button type="button" class="cal-nav-btn" onclick="calMove(1)" aria-label="Mois suivant">›</button>
+              </div>
+              <div class="cal-grid" id="cal-grid"></div>
+            </div>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label for="f-heure">Heure de départ <span class="freq">*</span>
+            <span class="fhint">(format libre)</span>
+          </label>
+          <input id="f-heure" type="text" placeholder="Ex : 10h30, 14h…">
+        </div>
+      </div>
+
+      <div class="form-section-sep">Lieu</div>
+
+      <div class="form-row-2">
+        <div class="fgroup">
+          <label for="f-ville">Ville <span class="freq">*</span></label>
+          <input id="f-ville" type="text" placeholder="Ex : Paris, Lyon…">
+        </div>
+        <div class="fgroup">
+          <label for="f-lieu">Lieu de rassemblement <span class="freq">*</span></label>
+          <input id="f-lieu" type="text" placeholder="Ex : Place de la République">
+        </div>
+      </div>
+
+      <div class="fgroup" style="margin-top:16px">
+        <label for="f-trajet">Trajet prévu</label>
+        <textarea id="f-trajet" placeholder="Décrivez le parcours prévu. Ex : Départ place de la République, direction boulevard Voltaire, arrivée place de la Nation."></textarea>
+      </div>
+
+      <div class="form-section-sep">Organisateurs & revendications</div>
+
+      <div class="fgroup" style="margin-bottom:16px">
+        <label for="f-orga">Organisateurs / syndicats</label>
+        <input id="f-orga" type="text" placeholder="Ex : CGT, CFDT, collectif X… (séparés par des virgules)">
+      </div>
+
+      <div class="fgroup">
+        <label for="f-revendications">Revendications / mot d'ordre</label>
+        <textarea id="f-revendications" placeholder="Décrivez les revendications portées. Ces informations sont précieuses pour les journalistes qui relaient l'événement."></textarea>
+      </div>
+
+      <div class="form-section-sep">Contact</div>
+
+      <div class="fgroup">
+        <label for="f-contact">Contact public
+          <span class="fhint">(affiché sur la fiche — email, lien Facebook, site…)</span>
+        </label>
+        <input id="f-contact" type="text" placeholder="Ex : contact@syndicat.fr, facebook.com/collectifX, syndicat.fr…">
+      </div>
+
+      <button class="form-submit" id="btn-submit" onclick="soumettre()">
+        <span>Publier la manifestation</span>
+        <span>→</span>
+      </button>
+      <p class="form-note">Publication immédiate · Gratuit · Sans compte · Sans modération</p>
+    </div>
+
+    <div class="form-success" id="form-success">
+      <div class="form-success-icon">✅</div>
+      <div class="form-success-title">Manifestation publiée !</div>
+      <div class="form-success-desc">Elle est maintenant visible sur ManifRadar par tous les visiteurs : journalistes, citoyens, militants.<br>Merci de contribuer à ManifRadar.</div>
+      <button class="btn-go-liste" onclick="showPage('liste')">Voir toutes les manifestations →</button>
+    </div>
+
+  </div>
+  <footer>
+    <div class="footer-logo">Manif<em>Radar</em></div>
+    <div class="footer-copy">© 2026 ManifRadar</div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     PAGE À PROPOS
+     ============================================================ -->
+<div class="page" id="page-apropos">
+  <div class="apropos-wrap">
+    <h1 class="apropos-heading">À propos de<br><em>ManifRadar</em></h1>
+
+    <div class="apropos-block">
+      <h3>Pourquoi ce projet ?</h3>
+      <p>Trouver des informations fiables sur une manifestation est souvent un parcours du combattant. Les annonces sont éparpillées entre Facebook, des sites confidentiels, des communiqués de presse syndicaux, des tracts… Il n'existe pas de source unique, centralisée et accessible à tous.</p>
+      <p>ManifRadar est né de ce constat simple : journalistes, citoyens et militants méritent un outil commun pour trouver — et partager — ces informations.</p>
+    </div>
+
+    <hr class="apropos-sep">
+
+    <div class="apropos-block">
+      <h3>Comment ça fonctionne ?</h3>
+      <p>N'importe quelle organisation, syndicat ou collectif peut déposer une manifestation en 2 minutes, sans créer de compte. La fiche est publiée immédiatement et visible par tous les visiteurs.</p>
+      <p>ManifRadar ne modère pas les contenus et ne prend pas de position politique. La plateforme est un outil neutre au service de l'information.</p>
+    </div>
+
+    <hr class="apropos-sep">
+
+    <div class="apropos-block">
+      <h3>Qui est derrière ManifRadar ?</h3>
+      <p>ManifRadar est un projet indépendant, sans publicité, sans financement extérieur. Il est entièrement gratuit, pour les organisateurs comme pour les visiteurs, et le restera.</p>
+    </div>
+
+    <hr class="apropos-sep">
+
+    <div class="apropos-block">
+      <h3>Contact</h3>
+      <p>Pour toute question, signalement ou demande de retrait d'un événement, vous pouvez nous contacter à : <span style="color:var(--r3)">contact@manifradar.fr</span></p>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-logo">Manif<em>Radar</em></div>
+    <div class="footer-copy">© 2026 ManifRadar · Plateforme indépendante</div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     PAGE ADMIN
+     ============================================================ -->
+<div class="page" id="page-admin">
+  <div class="admin-wrap">
+
+    <!-- LOGIN -->
+    <div id="admin-login">
+      <div class="admin-login">
+        <div class="admin-login-title">🔒 Administration</div>
+        <div class="admin-login-sub">Accès réservé à l'administrateur de ManifRadar</div>
+        <div class="admin-login-form">
+          <input type="password" id="admin-pwd" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')adminLogin()">
+          <div class="admin-login-error" id="admin-error">Mot de passe incorrect</div>
+          <button class="admin-login-btn" onclick="adminLogin()">Accéder →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="admin-dashboard" style="display:none">
+      <div class="admin-header">
+        <div class="admin-title">Admin <em>ManifRadar</em></div>
+        <button class="admin-logout" onclick="adminLogout()">Déconnexion</button>
+      </div>
+      <div id="admin-content">
+        <div class="state-loading"><div class="spinner"></div><div>Chargement…</div></div>
+      </div>
+    </div>
+
+  </div>
+  <footer>
+    <div class="footer-logo">Manif<em>Radar</em></div>
+    <div class="footer-copy">© 2026 ManifRadar</div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     DETAIL DRAWER
+     ============================================================ -->
+<div id="detail-backdrop" onclick="closeDetail()" aria-hidden="true"></div>
+<aside id="detail-drawer" role="dialog" aria-modal="true" aria-label="Détail de la manifestation">
+  <div class="drawer-header-bar">
+    <button class="drawer-back-btn" onclick="closeDetail()">
+      ← Retour à la liste
+    </button>
+    <button class="drawer-share-btn" onclick="partager()" id="btn-share">
+      🔗 Partager
+    </button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<!-- TOAST -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+const SUPA_URL = 'https://pleggocdxecyvdszhdyl.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsZWdnb2NkeGVjeXZkc3poZHlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MzM0NTIsImV4cCI6MjA4NzUwOTQ1Mn0.2OHVGXhPgf9-I4u2km7EU1Yj5xZDTX64yFOPz3QhLtE';
+
+let allManifs = [];
+let currentManif = null;
+
+/* ------ NAVIGATION ------ */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  const lnk = document.getElementById('nav-link-' + id);
+  if (lnk) lnk.classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+  closeDrawerMenu();
+  if (id === 'liste') chargerManifs();
+  if (id === 'home') chargerStats();
+  if (id === 'deposer') resetForm();
+}
+
+function toggleDrawer() {
+  const h = document.getElementById('hamburger');
+  const d = document.getElementById('nav-drawer');
+  const open = h.classList.toggle('open');
+  if (open) d.classList.add('open');
+  else d.classList.remove('open');
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+
+function closeDrawerMenu() {
+  document.getElementById('hamburger').classList.remove('open');
+  document.getElementById('nav-drawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function drawerGo(id) { closeDrawerMenu(); showPage(id); }
+
+/* ------ SUPABASE ------ */
+async function supa(path, opts = {}) {
+  const { prefer, headers: extraHeaders, ...fetchOpts } = opts;
+  const r = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': `Bearer ${SUPA_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': prefer || 'return=representation',
+      ...extraHeaders
+    },
+    ...fetchOpts
+  });
+  if (!r.ok) {
+    const text = await r.text();
+    let msg = 'Erreur réseau';
+    try { msg = JSON.parse(text).message || text || msg; } catch(e) { msg = text || msg; }
+    throw new Error(msg);
+  }
+  const text = await r.text();
+  return text ? JSON.parse(text) : null;
+}
+
+/* ------ STATS ------ */
+async function chargerStats() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const data = await supa(`manifestations?select=ville&date=gte.${today}`);
+    document.getElementById('stat-nb').textContent = data.length;
+    document.getElementById('stat-villes').textContent = new Set(data.map(m => m.ville.toLowerCase())).size;
+  } catch(e) {
+    document.getElementById('stat-nb').textContent = '0';
+    document.getElementById('stat-villes').textContent = '0';
+  }
+}
+
+/* ------ LISTE ------ */
+async function chargerManifs() {
+  const grid = document.getElementById('manifs-grid');
+  grid.innerHTML = '<div class="state-loading"><div class="spinner"></div><div>Chargement…</div></div>';
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    allManifs = await supa(`manifestations?date=gte.${today}&order=date.asc`);
+    afficher(allManifs);
+  } catch(e) {
+    grid.innerHTML = `<div class="state-empty"><div class="state-empty-icon">⚠️</div><div class="state-empty-title">Erreur</div><div class="state-empty-desc">${esc(e.message)}</div></div>`;
+  }
+}
+
+function afficher(list) {
+  const grid = document.getElementById('manifs-grid');
+  const count = document.getElementById('liste-count');
+  count.textContent = list.length === 0 ? 'Aucune manifestation trouvée' : `${list.length} manifestation${list.length > 1 ? 's' : ''} à venir`;
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="state-empty"><div class="state-empty-icon">📭</div><div class="state-empty-title">Aucune manif trouvée</div><div class="state-empty-desc">Aucune manifestation ne correspond à ta recherche.<br>Sois le premier à en déposer une !</div></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(m => cardHTML(m)).join('');
+}
+
+function cardHTML(m) {
+  const d = parseDate(m.date);
+  const jour = d.getDate().toString().padStart(2,'0');
+  const mois = d.toLocaleDateString('fr-FR',{month:'short'}).replace('.','').toUpperCase();
+  const annee = d.getFullYear();
+  return `<article class="manif-card" role="listitem" onclick="ouvrirDetail('${m.id}')" tabindex="0" onkeydown="if(event.key==='Enter')ouvrirDetail('${m.id}')" aria-label="${esc(m.nom)}">
+    <div class="card-date-strip" aria-label="Date : ${jour} ${mois} ${annee}">
+      <span class="card-date-day">${jour}</span>
+      <span class="card-date-rest">${mois} ${annee}</span>
+    </div>
+    <div class="card-body">
+      <span class="card-ville-tag">${esc(m.ville)}</span>
+      <div class="card-nom">${esc(m.nom)}</div>
+      <div class="card-orga">${esc(m.organisateurs)}</div>
+      <div class="card-meta">
+        <div class="card-meta-row"><span class="card-meta-icon">🕙</span><span>${esc(m.heure)}</span></div>
+        <div class="card-meta-row"><span class="card-meta-icon">📍</span><span>${esc(m.lieu)}</span></div>
+        ${m.trajet ? `<div class="card-meta-row"><span class="card-meta-icon">🗺</span><span>${esc(m.trajet.length > 70 ? m.trajet.substring(0,70)+'…' : m.trajet)}</span></div>` : ''}
+      </div>
+    </div>
+  </article>`;
+}
+
+function filtrer() {
+  const raw = document.getElementById('filter-ville').value;
+  const q = normalise(raw);
+  const btn = document.getElementById('filter-clear');
+  btn.classList.toggle('show', raw.length > 0);
+  const res = q ? allManifs.filter(m =>
+    normalise(m.ville).includes(q) ||
+    normalise(m.nom).includes(q) ||
+    normalise(m.organisateurs || '').includes(q)
+  ) : allManifs;
+  afficher(res);
+}
+
+function normalise(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+function clearFilter() {
+  document.getElementById('filter-ville').value = '';
+  document.getElementById('filter-clear').classList.remove('show');
+  afficher(allManifs);
+  document.getElementById('filter-ville').focus();
+}
+
+/* ------ DETAIL ------ */
+function ouvrirDetail(id) {
+  currentManif = allManifs.find(m => m.id === id);
+  if (!currentManif) return;
+  const m = currentManif;
+  const d = parseDate(m.date);
+  const dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const dateStrCap = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-date-band">
+      <div class="drawer-date-text">${dateStrCap} · ${esc(m.heure)}</div>
+      <div class="drawer-nom">${esc(m.nom)}</div>
+      <div class="drawer-orga">🏛 ${esc(m.organisateurs)}</div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Lieu & horaire</div>
+      <div class="drawer-info-grid">
+        <div class="drawer-info-block">
+          <div class="drawer-info-label">📅 Date</div>
+          <div class="drawer-info-val">${dateStrCap}</div>
+        </div>
+        <div class="drawer-info-block">
+          <div class="drawer-info-label">🕙 Heure</div>
+          <div class="drawer-info-val">${esc(m.heure)}</div>
+        </div>
+        <div class="drawer-info-block" style="grid-column:1/-1">
+          <div class="drawer-info-label">📍 Point de départ</div>
+          <div class="drawer-info-val">${esc(m.lieu)}, ${esc(m.ville)}</div>
+        </div>
+      </div>
+    </div>
+    ${m.trajet ? `
+    <div class="drawer-section">
+      <div class="drawer-section-title">Trajet prévu</div>
+      <div class="drawer-trajet"><div class="drawer-trajet-text">${esc(m.trajet)}</div></div>
+    </div>` : ''}
+    ${m.revendications ? `
+    <div class="drawer-section">
+      <div class="drawer-section-title">Revendications</div>
+      <div class="drawer-revendications">
+        <div class="drawer-revendications-title">Mot d'ordre</div>
+        <div class="drawer-revendications-text">${esc(m.revendications)}</div>
+      </div>
+    </div>` : ''}
+    ${m.contact ? `
+    <div class="drawer-section">
+      <div class="drawer-section-title">Contact</div>
+      <div class="drawer-info-block">
+        <div class="drawer-info-label">📬 Contacter les organisateurs</div>
+        <div class="drawer-info-val">${isUrl(m.contact)
+          ? `<a href="${esc(m.contact)}" target="_blank" rel="noopener" style="color:var(--r3);text-decoration:underline;word-break:break-all;">${esc(m.contact)}</a>`
+          : isEmail(m.contact)
+          ? `<a href="mailto:${esc(m.contact)}" style="color:var(--r3);text-decoration:underline;">${esc(m.contact)}</a>`
+          : esc(m.contact)
+        }</div>
+      </div>
+    </div>` : ''}
+    <div class="drawer-section">
+      <button onclick="closeDetail()" style="width:100%;padding:14px;background:var(--s2);border:1px solid var(--s3);border-radius:var(--radius);color:var(--t2);font-size:0.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        ← Retour à la liste
+      </button>
+    </div>
+  `;
+
+  document.getElementById('detail-backdrop').classList.add('open');
+  document.getElementById('detail-drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('detail-drawer').focus();
+}
+
+function closeDetail() {
+  document.getElementById('detail-backdrop').classList.remove('open');
+  document.getElementById('detail-drawer').classList.remove('open');
+  document.body.style.overflow = '';
+  currentManif = null;
+}
+
+function partager() {
+  if (!currentManif) return;
+  const txt = `${currentManif.nom} — ${currentManif.lieu}, ${currentManif.ville} · ${currentManif.heure} · ManifRadar`;
+  if (navigator.share) {
+    navigator.share({ title: currentManif.nom, text: txt, url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(txt).then(() => toast('🔗 Infos copiées dans le presse-papier'));
+  }
+}
+
+/* ------ FORMULAIRE ------ */
+function resetForm() {
+  ['f-nom','f-date','f-heure','f-ville','f-lieu','f-trajet','f-orga','f-revendications','f-contact']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; el && el.classList.remove('error'); });
+  // Reset calendrier
+  calSelected = null;
+  const disp = document.getElementById('f-date-display');
+  if (disp) { disp.textContent = 'Choisir une date'; disp.classList.add('placeholder'); disp.classList.remove('error'); }
+  initCal();
+  document.getElementById('form-body').style.display = 'block';
+  document.getElementById('form-success').style.display = 'none';
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = false;
+  btn.innerHTML = '<span>Publier la manifestation</span><span>→</span>';
+}
+
+async function soumettre() {
+  const fields = [
+    { id:'f-nom', key:'nom' },
+    { id:'f-date', key:'date' },
+    { id:'f-heure', key:'heure' },
+    { id:'f-ville', key:'ville' },
+    { id:'f-lieu', key:'lieu' }
+  ];
+  const optional = [
+    { id:'f-orga', key:'organisateurs' },
+    { id:'f-trajet', key:'trajet' },
+    { id:'f-revendications', key:'revendications' },
+    { id:'f-contact', key:'contact' }
+  ];
+
+  let hasError = false;
+  const payload = {};
+  fields.forEach(({id,key}) => {
+    const val = document.getElementById(id).value.trim();
+    if (!val) {
+      // Pour la date, on marque le display
+      const errEl = id === 'f-date' ? document.getElementById('f-date-display') : document.getElementById(id);
+      errEl.classList.add('error');
+      hasError = true;
+    } else {
+      const errEl = id === 'f-date' ? document.getElementById('f-date-display') : document.getElementById(id);
+      errEl.classList.remove('error');
+      payload[key] = val;
+    }
+  });
+  optional.forEach(({id,key}) => {
+    const val = document.getElementById(id).value.trim();
+    payload[key] = val || null;
+  });
+
+  if (hasError) { toast('⚠️ Merci de remplir tous les champs obligatoires'); return; }
+
+  // Modération mots-clés
+  if (!verifierContenu(payload)) {
+    toast('❌ Contenu refusé : le texte contient des termes inappropriés');
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div><span>Publication…</span>';
+
+  try {
+    await supa('manifestations', { method:'POST', prefer:'return=minimal', body: JSON.stringify(payload) });
+    document.getElementById('form-body').style.display = 'none';
+    document.getElementById('form-success').style.display = 'block';
+  } catch(e) {
+    toast('❌ Erreur : ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '<span>Publier la manifestation</span><span>→</span>';
+  }
+}
+
+/* ------ UTILS ------ */
+function parseDate(str) {
+  // Force midi local pour éviter le décalage UTC
+  return new Date(str + 'T12:00:00');
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function isUrl(s) { return /^https?:\/\//i.test(s) || /^www\./i.test(s); }
+function isEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// Fermer le drawer avec Échap
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDetail();
+});
+
+/* ------ MODÉRATION MOTS-CLÉS ------ */
+const MOTS_INTERDITS = [
+  // Insultes & haine
+  'merde','connard','connasse','salope','pute','bâtard','batard',
+  'fdp','enculé','encule','nique','niquer','ntm','pd ','pédé','pede',
+  'nazi','fasciste','raciste','antisémite','antisemite',
+  'negro','nègre','negre','bounty','bougnoule','youpin','feuj',
+  'islamophobie','homophobe',
+  // Contenu haineux explicite
+  'gauchiste','facho','bolchevique','islamo','islamiste',
+  'grande remplaceme','grand remplacement',
+  'mort aux','crève','crevent','à mort',
+  'extermination','génocide','genocide',
+  // Spam / fake
+  'arnaque','escroquerie','promotion','promo','casino','bitcoin','crypto'
+];
+
+function contientMotInterdit(texte) {
+  const t = normalise(texte);
+  return MOTS_INTERDITS.some(m => t.includes(normalise(m)));
+}
+
+function verifierContenu(payload) {
+  const champs = [payload.nom, payload.organisateurs, payload.revendications, payload.trajet].filter(Boolean);
+  for (const champ of champs) {
+    if (contientMotInterdit(champ)) return false;
+  }
+  return true;
+}
+
+/* ------ ADMIN ------ */
+const ADMIN_HASH = 'a7f3b2c9e1d4f6a8b0c2e4f7a9b1c3e5'; // hash visuel, vrai check côté JS
+const ADMIN_PWD  = 'Basrhinhautrhin6768!';
+let adminAuthentifie = false;
+
+function adminLogin() {
+  const pwd = document.getElementById('admin-pwd').value;
+  if (pwd === ADMIN_PWD) {
+    adminAuthentifie = true;
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    chargerAdmin();
+  } else {
+    document.getElementById('admin-error').style.display = 'block';
+    document.getElementById('admin-pwd').classList.add('error');
+  }
+}
+
+function adminLogout() {
+  adminAuthentifie = false;
+  document.getElementById('admin-login').style.display = 'block';
+  document.getElementById('admin-dashboard').style.display = 'none';
+  document.getElementById('admin-pwd').value = '';
+  document.getElementById('admin-error').style.display = 'none';
+}
+
+async function chargerAdmin() {
+  const content = document.getElementById('admin-content');
+  content.innerHTML = '<div class="state-loading"><div class="spinner"></div><div>Chargement…</div></div>';
+  try {
+    const data = await supa('manifestations?order=created_at.desc');
+    if (data.length === 0) {
+      content.innerHTML = '<div class="admin-empty">Aucune manifestation en base.</div>';
+      return;
+    }
+    content.innerHTML = `
+      <div style="margin-bottom:16px;color:var(--t4);font-size:0.82rem;">${data.length} manifestation${data.length>1?'s':''} en base</div>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Ville</th>
+            <th>Date</th>
+            <th>Organisateurs</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map(m => `
+          <tr id="admin-row-${m.id}">
+            <td class="admin-td-nom">${esc(m.nom)}</td>
+            <td class="admin-td-ville">${esc(m.ville)}</td>
+            <td class="admin-td-date">${new Date(m.date+'T12:00:00').toLocaleDateString('fr-FR')}</td>
+            <td>${esc(m.organisateurs||'—')}</td>
+            <td><button class="btn-delete" onclick="supprimerManif('${m.id}')">🗑 Supprimer</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) {
+    content.innerHTML = `<div class="admin-empty">Erreur : ${esc(e.message)}</div>`;
+  }
+}
+
+async function supprimerManif(id) {
+  if (!confirm('Supprimer cette manifestation définitivement ?')) return;
+  try {
+    await supa(`manifestations?id=eq.${id}`, { method:'DELETE', prefer:'return=minimal' });
+    const row = document.getElementById('admin-row-' + id);
+    if (row) row.style.display = 'none';
+    toast('✅ Manifestation supprimée');
+    // Refresh liste publique si chargée
+    if (allManifs.length) allManifs = allManifs.filter(m => m.id !== id);
+  } catch(e) {
+    toast('❌ Erreur : ' + e.message);
+  }
+}
+
+// Accès admin via URL #admin
+window.addEventListener('hashchange', () => {
+  if (window.location.hash === '#admin') showPage('admin');
+});
+if (window.location.hash === '#admin') {
+  document.addEventListener('DOMContentLoaded', () => showPage('admin'));
+}
+let calYear, calMonth, calSelected = null;
+
+function initCal() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  renderCal();
+}
+
+function toggleCal() {
+  const dd = document.getElementById('cal-dropdown');
+  const disp = document.getElementById('f-date-display');
+  const open = dd.classList.toggle('open');
+  disp.classList.toggle('open', open);
+  disp.setAttribute('aria-expanded', open);
+  if (open) renderCal();
+}
+
+function closeCal() {
+  document.getElementById('cal-dropdown').classList.remove('open');
+  const disp = document.getElementById('f-date-display');
+  disp.classList.remove('open');
+  disp.setAttribute('aria-expanded', 'false');
+}
+
+function calMove(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  renderCal();
+}
+
+function renderCal() {
+  const JOURS = ['Lu','Ma','Me','Je','Ve','Sa','Di'];
+  const MOIS  = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  document.getElementById('cal-month-label').textContent = `${MOIS[calMonth]} ${calYear}`;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const first = new Date(calYear, calMonth, 1);
+  // Lundi = 0
+  let startDow = first.getDay() - 1; if (startDow < 0) startDow = 6;
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  let html = JOURS.map(j => `<div class="cal-dow">${j}</div>`).join('');
+
+  for (let i = 0; i < startDow; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(calYear, calMonth, d);
+    const isPast = date < today;
+    const isToday = date.getTime() === today.getTime();
+    const isoStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isSel = calSelected === isoStr;
+    const cls = ['cal-day', isPast?'past':'', isToday?'today':'', isSel?'selected':''].filter(Boolean).join(' ');
+    const handler = isPast ? '' : `onclick="selectDay('${isoStr}')"`;
+    html += `<button type="button" class="${cls}" ${handler} ${isPast?'disabled':''} aria-label="${d} ${MOIS[calMonth]} ${calYear}">${d}</button>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+function selectDay(iso) {
+  calSelected = iso;
+  document.getElementById('f-date').value = iso;
+  const [y,m,d] = iso.split('-');
+  const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const disp = document.getElementById('f-date-display');
+  disp.textContent = `${parseInt(d)} ${MOIS[parseInt(m)-1]} ${y}`;
+  disp.classList.remove('placeholder','error');
+  closeCal();
+}
+
+// Fermer le cal en cliquant dehors
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('cal-wrap');
+  if (wrap && !wrap.contains(e.target)) closeCal();
+});
+
+initCal();
+
+// Init
+chargerStats();
+</script>
+</body>
+</html>
