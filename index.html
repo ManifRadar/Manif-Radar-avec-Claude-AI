@@ -966,17 +966,20 @@ footer {
 }
 /* ------ SCROLL TO TOP ------ */
 #scroll-top {
-  position:fixed; bottom:24px; right:24px; z-index:800;
-  width:44px; height:44px; border-radius:50%;
+  position:fixed; bottom:80px; right:20px; z-index:799;
+  width:48px; height:48px; border-radius:50%;
   background:var(--r); border:none; color:white;
-  font-size:1.1rem; cursor:pointer;
+  font-size:1.3rem; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   opacity:0; pointer-events:none;
   transition:opacity 0.3s, transform 0.3s, background var(--transition);
-  box-shadow:0 4px 16px rgba(232,40,26,0.4);
+  box-shadow:0 4px 20px rgba(232,40,26,0.5);
 }
 #scroll-top.visible { opacity:1; pointer-events:auto; }
 #scroll-top:hover { background:var(--r2); transform:translateY(-2px); }
+@media(max-width:768px) {
+  #scroll-top { bottom:24px; right:16px; width:52px; height:52px; font-size:1.4rem; }
+}
 
 /* ------ SIGNALEMENT ------ */
 .btn-signaler {
@@ -1346,6 +1349,10 @@ function showPage(id) {
   window.scrollTo({ top:0, behavior:'smooth' });
   closeDrawerMenu();
   closeDetail();
+  // Sauvegarde la page dans l'URL sauf pour admin et manif direct
+  if (id !== 'admin' && !window.location.hash.startsWith('#manif-')) {
+    history.replaceState(null, '', id === 'home' ? '.' : '#page-' + id);
+  }
   if (id === 'liste') chargerManifs();
   if (id === 'home') chargerStats();
   if (id === 'deposer') resetForm();
@@ -1874,14 +1881,19 @@ window.addEventListener('hashchange', () => {
     setTimeout(() => ouvrirDetail(id), 500);
   }
 });
-if (window.location.hash === '#admin') {
-  document.addEventListener('DOMContentLoaded', () => showPage('admin'));
-} else if (window.location.hash.startsWith('#manif-')) {
-  const id = window.location.hash.replace('#manif-', '');
-  document.addEventListener('DOMContentLoaded', () => {
-    showPage('liste');
-    setTimeout(() => ouvrirDetail(id), 1000);
-  });
+
+// Restaurer la page depuis l'URL au chargement
+const initHash = window.location.hash;
+if (initHash === '#admin') {
+  showPage('admin');
+} else if (initHash.startsWith('#manif-')) {
+  const id = initHash.replace('#manif-', '');
+  showPage('liste');
+  setTimeout(() => ouvrirDetail(id), 1000);
+} else if (initHash.startsWith('#page-')) {
+  showPage(initHash.replace('#page-', ''));
+} else {
+  showPage('home');
 }
 let calYear, calMonth, calSelected = null;
 
