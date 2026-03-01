@@ -22,9 +22,9 @@
   --s3: #2A2A2A;
   --s4: #3A3A3A;
   --t1: #FFFFFF;
-  --t2: #C8C8C8;
-  --t3: #888888;
-  --t4: #555555;
+  --t2: rgba(255,255,255,0.80);
+  --t3: rgba(255,255,255,0.50);
+  --t4: rgba(255,255,255,0.30);
   --vert: #22C55E;
   --nav-h: 64px;
   --radius: 12px;
@@ -1072,7 +1072,7 @@ footer {
   </section>
   <footer>
     <div class="footer-logo">Manif<em>Radar</em></div>
-    <div class="footer-copy">© 2026 ManifRadar · Plateforme indépendante</div>
+    <div class="footer-copy">© 2026 ManifRadar · <a onclick="showPage('confidentialite')" style="color:var(--t4);text-decoration:underline;cursor:pointer;">Politique de confidentialité</a></div>
   </footer>
 </div>
 
@@ -1116,7 +1116,7 @@ footer {
   </main>
   <footer>
     <div class="footer-logo">Manif<em>Radar</em></div>
-    <div class="footer-copy">© 2026 ManifRadar</div>
+    <div class="footer-copy">© 2026 ManifRadar · <a onclick="showPage('confidentialite')" style="color:var(--t4);text-decoration:underline;cursor:pointer;">Politique de confidentialité</a></div>
   </footer>
 </div>
 
@@ -1220,7 +1220,7 @@ footer {
   </div>
   <footer>
     <div class="footer-logo">Manif<em>Radar</em></div>
-    <div class="footer-copy">© 2026 ManifRadar</div>
+    <div class="footer-copy">© 2026 ManifRadar · <a onclick="showPage('confidentialite')" style="color:var(--t4);text-decoration:underline;cursor:pointer;">Politique de confidentialité</a></div>
   </footer>
 </div>
 
@@ -1325,7 +1325,7 @@ footer {
   </div>
   <footer>
     <div class="footer-logo">Manif<em>Radar</em></div>
-    <div class="footer-copy">© 2026 ManifRadar · Plateforme indépendante</div>
+    <div class="footer-copy">© 2026 ManifRadar · <a onclick="showPage('confidentialite')" style="color:var(--t4);text-decoration:underline;cursor:pointer;">Politique de confidentialité</a></div>
   </footer>
 </div>
 
@@ -1362,7 +1362,7 @@ footer {
   </div>
   <footer>
     <div class="footer-logo">Manif<em>Radar</em></div>
-    <div class="footer-copy">© 2026 ManifRadar</div>
+    <div class="footer-copy">© 2026 ManifRadar · <a onclick="showPage('confidentialite')" style="color:var(--t4);text-decoration:underline;cursor:pointer;">Politique de confidentialité</a></div>
   </footer>
 </div>
 
@@ -1613,7 +1613,10 @@ async function ouvrirDetail(id) {
       <button onclick="closeDetail()" style="width:100%;padding:14px;background:var(--s2);border:1px solid var(--s3);border-radius:var(--radius);color:var(--t2);font-size:0.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
         ← Retour à la liste
       </button>
-      <button class="btn-signaler-bottom" id="btn-signaler" onclick="signalerManif()">
+    </div>
+    <div style="text-align:center;padding:8px 24px 32px;">
+      <button id="btn-signaler" onclick="signalerManif()" style="background:none;border:none;color:var(--t4);font-size:0.78rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:8px 16px;transition:color var(--transition);"
+        onmouseover="this.style.color='var(--r3)'" onmouseout="this.style.color='var(--t4)'">
         🚩 Signaler cet événement
       </button>
     </div>
@@ -1857,13 +1860,17 @@ function majBoutonSignaler(id) {
   const btn = document.getElementById('btn-signaler');
   if (!btn) return;
   if (signalementsFaits.has(id)) {
-    btn.classList.add('signale');
-    btn.innerHTML = '🚩 Déjà signalé';
+    btn.innerHTML = '✓ Déjà signalé';
     btn.disabled = true;
+    btn.style.color = 'var(--r3)';
+    btn.style.cursor = 'default';
+    btn.style.textDecoration = 'none';
   } else {
-    btn.classList.remove('signale');
     btn.innerHTML = '🚩 Signaler cet événement';
     btn.disabled = false;
+    btn.style.color = 'var(--t4)';
+    btn.style.cursor = 'pointer';
+    btn.style.textDecoration = 'underline';
   }
 }
 
