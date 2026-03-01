@@ -1641,6 +1641,13 @@ async function soumettre() {
     return;
   }
 
+  // Détection doublons
+  const doublon = await verifierDoublon(payload.ville, payload.date);
+  if (doublon && !payload._doublon_confirme) {
+    afficherAvertissementDoublon(doublon, payload);
+    return;
+  }
+
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div><span>Publication…</span>';
@@ -1709,6 +1716,65 @@ function contientMotInterdit(texte) {
     const regex = new RegExp('(^|[\\s,;.!?\'"-])' + mot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[\\s,;.!?\'"-])', 'i');
     return regex.test(' ' + t + ' ');
   });
+}
+
+/* ------ DÉTECTION DOUBLONS ------ */
+async function verifierDoublon(ville, date) {
+  try {
+    const villeNorm = ville.toLowerCase().trim();
+    const data = await supa(`manifestations?date=eq.${date}&masquee=eq.false&select=id,nom,ville,heure`);
+    if (!data) return null;
+    const match = data.find(m => m.ville.toLowerCase().trim() === villeNorm);
+    return match || null;
+  } catch(e) { return null; }
+}
+
+function afficherAvertissementDoublon(doublon, payload) {
+  const d = parseDate(doublon.date || payload.date);
+  const dateStr = d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+  const modal = document.createElement('div');
+  modal.id = 'modal-doublon';
+  modal.style.cssText = `position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;`;
+  modal.innerHTML = `
+    <div style="background:var(--s1);border:1px solid var(--s3);border-radius:16px;padding:28px;max-width:420px;width:100%;">
+      <div style="font-size:1.5rem;margin-bottom:12px;">⚠️</div>
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;margin-bottom:12px;color:var(--t1);">Une manif existe déjà</h3>
+      <p style="color:var(--t3);font-size:0.9rem;line-height:1.6;margin-bottom:20px;">
+        Il existe déjà une manifestation à <strong style="color:var(--t1);">${esc(doublon.ville)}</strong> le <strong style="color:var(--t1);">${dateStr}</strong> :<br>
+        <span style="color:var(--r3);font-weight:600;">"${esc(doublon.nom)}"</span><br><br>
+        Est-ce la même manifestation ?
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button onclick="document.getElementById('modal-doublon').remove()" 
+          style="flex:1;padding:12px;border-radius:8px;border:1px solid var(--s3);background:var(--s2);color:var(--t1);font-weight:600;cursor:pointer;min-width:120px;">
+          Oui, annuler
+        </button>
+        <button onclick="confirmerMalgréDoublon(${JSON.stringify(payload).replace(/"/g,'&quot;')})" 
+          style="flex:1;padding:12px;border-radius:8px;border:none;background:var(--r);color:white;font-weight:600;cursor:pointer;min-width:120px;">
+          Non, publier quand même
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function confirmerMalgréDoublon(payload) {
+  document.getElementById('modal-doublon')?.remove();
+  payload._doublon_confirme = true;
+  // Relancer la soumission directement
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div><span>Publication…</span>';
+  try {
+    const { _doublon_confirme, ...cleanPayload } = payload;
+    await supa('manifestations', { method:'POST', prefer:'return=minimal', body: JSON.stringify(cleanPayload) });
+    document.getElementById('form-body').style.display = 'none';
+    document.getElementById('form-success').style.display = 'block';
+  } catch(e) {
+    toast('❌ Erreur : ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '<span>Publier la manifestation</span><span>→</span>';
+  }
 }
 
 function verifierContenu(payload) {
