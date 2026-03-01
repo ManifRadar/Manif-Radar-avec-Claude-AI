@@ -1722,8 +1722,8 @@ function contientMotInterdit(texte) {
 async function verifierDoublon(ville, date) {
   try {
     const villeNorm = ville.toLowerCase().trim();
-    const data = await supa(`manifestations?date=eq.${date}&masquee=eq.false&select=id,nom,ville,heure`);
-    if (!data) return null;
+    const data = await supa(`manifestations?date=eq.${date}&masquee=eq.false&select=id,nom,ville,heure,date`);
+    if (!data || !Array.isArray(data)) return null;
     const match = data.find(m => m.ville.toLowerCase().trim() === villeNorm);
     return match || null;
   } catch(e) { return null; }
