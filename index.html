@@ -1452,9 +1452,16 @@ function clearFilter() {
 }
 
 /* ------ DETAIL ------ */
-function ouvrirDetail(id) {
+async function ouvrirDetail(id) {
   currentManif = allManifs.find(m => m.id === id);
-  if (!currentManif) return;
+  if (!currentManif) {
+    // Lien direct : charger depuis Supabase
+    try {
+      const data = await supa(`manifestations?id=eq.${id}`);
+      if (!data || data.length === 0) return;
+      currentManif = data[0];
+    } catch(e) { return; }
+  }
   const m = currentManif;
   const d = parseDate(m.date);
   const dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -1531,11 +1538,12 @@ function closeDetail() {
 
 function partager() {
   if (!currentManif) return;
-  const txt = `${currentManif.nom} — ${currentManif.lieu}, ${currentManif.ville} · ${currentManif.heure} · ManifRadar`;
+  const url = `${window.location.origin}${window.location.pathname}#manif-${currentManif.id}`;
+  const txt = `${currentManif.nom} — ${currentManif.lieu}, ${currentManif.ville} · ${currentManif.heure}`;
   if (navigator.share) {
-    navigator.share({ title: currentManif.nom, text: txt, url: window.location.href });
+    navigator.share({ title: currentManif.nom, text: txt, url });
   } else {
-    navigator.clipboard.writeText(txt).then(() => toast('🔗 Infos copiées dans le presse-papier'));
+    navigator.clipboard.writeText(url).then(() => toast('🔗 Lien copié dans le presse-papier'));
   }
 }
 
@@ -1723,7 +1731,7 @@ async function signalerManif() {
       allManifs = allManifs.filter(m => m.id !== id);
       setTimeout(() => closeDetail(), 1500);
     } else {
-      toast(`🚩 Signalement enregistré (${nouveau}/${SEUIL_SIGNALEMENT})`);
+      toast('🚩 Signalement enregistré, merci.');
     }
   } catch(e) {
     toast('❌ Erreur : ' + e.message);
@@ -1835,9 +1843,20 @@ async function supprimerManif(id) {
 // Accès admin via URL #admin
 window.addEventListener('hashchange', () => {
   if (window.location.hash === '#admin') showPage('admin');
+  else if (window.location.hash.startsWith('#manif-')) {
+    const id = window.location.hash.replace('#manif-', '');
+    showPage('liste');
+    setTimeout(() => ouvrirDetail(id), 500);
+  }
 });
 if (window.location.hash === '#admin') {
   document.addEventListener('DOMContentLoaded', () => showPage('admin'));
+} else if (window.location.hash.startsWith('#manif-')) {
+  const id = window.location.hash.replace('#manif-', '');
+  document.addEventListener('DOMContentLoaded', () => {
+    showPage('liste');
+    setTimeout(() => ouvrirDetail(id), 1000);
+  });
 }
 let calYear, calMonth, calSelected = null;
 
