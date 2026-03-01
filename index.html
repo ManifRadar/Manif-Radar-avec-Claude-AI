@@ -528,7 +528,7 @@ a { color:inherit; text-decoration:none; }
 
 .drawer-header-bar {
   display:flex; align-items:center; justify-content:space-between;
-  padding:12px 16px;
+  padding:12px 16px; gap:12px;
   border-bottom:1px solid var(--s3);
   flex-shrink:0;
   position:sticky; top:0;
@@ -541,19 +541,31 @@ a { color:inherit; text-decoration:none; }
   color:white; font-size:0.9rem; font-weight:700;
   transition:all var(--transition);
   padding:10px 18px; border-radius:8px;
-  cursor:pointer;
+  cursor:pointer; flex-shrink:0;
   letter-spacing:0.02em;
 }
 .drawer-back-btn:hover { background:var(--r2); }
 
 .drawer-share-btn {
-  display:flex; align-items:center; gap:6px;
+  display:flex; align-items:center; justify-content:center; gap:6px;
   background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25);
   color:var(--t1); font-size:0.85rem; font-weight:600;
-  padding:9px 16px; border-radius:8px;
+  padding:10px 18px; border-radius:8px; flex:1;
   transition:all var(--transition); cursor:pointer;
 }
 .drawer-share-btn:hover { background:rgba(255,255,255,0.18); }
+
+.btn-signaler-bottom {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  background:transparent; border:1px solid rgba(232,40,26,0.25);
+  color:var(--t4); font-size:0.85rem; font-weight:500;
+  padding:12px; border-radius:8px; cursor:pointer; width:100%;
+  transition:all var(--transition); margin-top:8px;
+}
+.btn-signaler-bottom:hover { background:rgba(232,40,26,0.08); border-color:rgba(232,40,26,0.4); color:var(--r3); }
+.btn-signaler-bottom.signale { color:var(--r3); border-color:rgba(232,40,26,0.3); cursor:default; }
+
+:focus-visible { outline:2px solid var(--r); outline-offset:2px; }
 
 .drawer-body {
   flex:1; overflow-y:auto;
@@ -643,17 +655,17 @@ a { color:inherit; text-decoration:none; }
 
 .fgroup { display:flex; flex-direction:column; gap:7px; }
 .fgroup label {
-  font-size:0.78rem; font-weight:600;
+  font-size:0.78rem; font-weight:700;
   letter-spacing:0.06em; text-transform:uppercase;
-  color:var(--t4);
+  color:var(--t2);
   display:flex; align-items:center; gap:4px;
 }
 .freq { color:var(--r); }
-.fhint { font-size:0.75rem; color:var(--t4); font-weight:300; letter-spacing:0; text-transform:none; }
+.fhint { font-size:0.75rem; color:var(--t3); font-weight:400; letter-spacing:0; text-transform:none; }
 
 .fgroup input, .fgroup textarea {
-  background:var(--s1);
-  border:1px solid var(--s3);
+  background:var(--s2);
+  border:1px solid var(--s4);
   border-radius:var(--radius);
   color:var(--t1);
   font-size:0.95rem; font-weight:400;
@@ -667,7 +679,7 @@ a { color:inherit; text-decoration:none; }
   background:rgba(232,40,26,0.04);
   box-shadow:0 0 0 3px rgba(232,40,26,0.12);
 }
-.fgroup input::placeholder, .fgroup textarea::placeholder { color:var(--t4); }
+.fgroup input::placeholder, .fgroup textarea::placeholder { color:var(--t3); }
 .fgroup textarea { resize:vertical; min-height:120px; }
 .fgroup input.error { border-color:#FF6B6B; }
 
@@ -982,17 +994,7 @@ footer {
 }
 
 /* ------ SIGNALEMENT ------ */
-.btn-signaler {
-  display:flex; align-items:center; gap:6px;
-  background:rgba(232,40,26,0.12); border:1px solid rgba(232,40,26,0.35);
-  color:var(--r3); font-size:0.85rem; font-weight:600;
-  padding:9px 16px; border-radius:8px; cursor:pointer;
-  transition:all var(--transition);
-}
-.btn-signaler:hover { background:rgba(232,40,26,0.22); border-color:rgba(232,40,26,0.5); }
-.btn-signaler.signale { background:rgba(232,40,26,0.2); border-color:rgba(232,40,26,0.4); color:var(--r3); cursor:default; }
-
-:focus-visible {
+.btn-signaler-bottom {
   outline:2px solid var(--r);
   outline-offset:3px;
   border-radius:4px;
@@ -1261,6 +1263,68 @@ footer {
   </div>
   <footer>
     <div class="footer-logo">Manif<em>Radar</em></div>
+    <div class="footer-copy">© 2026 ManifRadar · Plateforme indépendante · <a onclick="showPage('confidentialite')" style="color:var(--t4);text-decoration:underline;cursor:pointer;">Politique de confidentialité</a></div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     PAGE CONFIDENTIALITÉ
+     ============================================================ -->
+<div class="page" id="page-confidentialite">
+  <div class="apropos-wrap">
+    <h1 class="apropos-heading">Politique de<br><em>confidentialité</em></h1>
+
+    <div class="apropos-block">
+      <h3>Qui sommes-nous ?</h3>
+      <p>ManifRadar est une plateforme indépendante et bénévole permettant de centraliser les manifestations en France. Elle est gérée par une seule personne, à titre personnel et non commercial. Contact : <a href="mailto:manifradar@gmail.com" style="color:var(--r3);">manifradar@gmail.com</a></p>
+    </div>
+
+    <hr class="apropos-sep">
+
+    <div class="apropos-block">
+      <h3>Données collectées</h3>
+      <p>Lors de la déclaration d'une manifestation, les informations suivantes peuvent être saisies : nom de l'événement, date, heure, ville, lieu de rassemblement, trajet prévu, organisateurs, revendications, et un contact public.</p>
+      <p>Ces données sont <strong style="color:var(--t1);">volontairement saisies par l'utilisateur</strong> et sont destinées à être affichées publiquement sur le site. Aucune donnée n'est collectée à l'insu de l'utilisateur.</p>
+      <p>ManifRadar ne collecte pas d'adresse IP, ne dépose pas de cookies de tracking, et n'utilise aucun outil d'analyse comportementale (pas de Google Analytics, etc.).</p>
+    </div>
+
+    <hr class="apropos-sep">
+
+    <div class="apropos-block">
+      <h3>Données personnelles</h3>
+      <p>Le champ "Contact public" peut contenir des données personnelles (email, numéro de téléphone). En remplissant ce champ, l'utilisateur consent explicitement à ce que cette information soit affichée publiquement sur la fiche de l'événement.</p>
+      <p>Le champ "Organisateurs" peut également contenir des noms de personnes ou d'organisations.</p>
+    </div>
+
+    <hr class="apropos-sep">
+
+    <div class="apropos-block">
+      <h3>Hébergement des données</h3>
+      <p>Les données sont stockées sur <strong style="color:var(--t1);">Supabase</strong> (infrastructure PostgreSQL hébergée en Europe) et le site est servi via <strong style="color:var(--t1);">GitHub Pages</strong>. Ces prestataires disposent de leurs propres politiques de confidentialité.</p>
+    </div>
+
+    <hr class="apropos-sep">
+
+    <div class="apropos-block">
+      <h3>Vos droits</h3>
+      <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour exercer ces droits ou demander le retrait d'un événement, écrivez à : <a href="mailto:manifradar@gmail.com" style="color:var(--r3);">manifradar@gmail.com</a></p>
+      <p>ManifRadar étant un projet bénévole géré par une seule personne, merci de formuler des demandes raisonnables et d'anticiper un délai de traitement de quelques jours.</p>
+    </div>
+
+    <hr class="apropos-sep">
+
+    <div class="apropos-block">
+      <h3>Durée de conservation</h3>
+      <p>Les événements passés restent visibles dans la base de données mais sont automatiquement filtrés de l'affichage public. Toute demande de suppression définitive peut être adressée par email.</p>
+    </div>
+
+    <div style="margin-top:32px;">
+      <button onclick="showPage('apropos')" style="background:none;border:none;color:var(--t4);font-size:0.9rem;cursor:pointer;text-decoration:underline;">← Retour</button>
+    </div>
+
+  </div>
+  <footer>
+    <div class="footer-logo">Manif<em>Radar</em></div>
     <div class="footer-copy">© 2026 ManifRadar · Plateforme indépendante</div>
   </footer>
 </div>
@@ -1311,14 +1375,9 @@ footer {
     <button class="drawer-back-btn" onclick="closeDetail()">
       ← Retour à la liste
     </button>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="drawer-share-btn" onclick="partager()" id="btn-share">
-        🔗 Partager
-      </button>
-      <button class="btn-signaler" id="btn-signaler" onclick="signalerManif()">
-        🚩 Signaler
-      </button>
-    </div>
+    <button class="drawer-share-btn" onclick="partager()" id="btn-share">
+      🔗 Partager
+    </button>
   </div>
   <div class="drawer-body" id="drawer-body"></div>
 </aside>
@@ -1553,6 +1612,9 @@ async function ouvrirDetail(id) {
     <div class="drawer-section">
       <button onclick="closeDetail()" style="width:100%;padding:14px;background:var(--s2);border:1px solid var(--s3);border-radius:var(--radius);color:var(--t2);font-size:0.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
         ← Retour à la liste
+      </button>
+      <button class="btn-signaler-bottom" id="btn-signaler" onclick="signalerManif()">
+        🚩 Signaler cet événement
       </button>
     </div>
   `;
@@ -1796,11 +1858,11 @@ function majBoutonSignaler(id) {
   if (!btn) return;
   if (signalementsFaits.has(id)) {
     btn.classList.add('signale');
-    btn.innerHTML = '🚩 Signalé';
+    btn.innerHTML = '🚩 Déjà signalé';
     btn.disabled = true;
   } else {
     btn.classList.remove('signale');
-    btn.innerHTML = '🚩 Signaler';
+    btn.innerHTML = '🚩 Signaler cet événement';
     btn.disabled = false;
   }
 }
