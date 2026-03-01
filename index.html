@@ -22,9 +22,9 @@
   --s3: #2A2A2A;
   --s4: #3A3A3A;
   --t1: #FFFFFF;
-  --t2: rgba(255,255,255,0.80);
-  --t3: rgba(255,255,255,0.50);
-  --t4: rgba(255,255,255,0.30);
+  --t2: #E0E0E0;
+  --t3: #BBBBBB;
+  --t4: #999999;
   --vert: #22C55E;
   --nav-h: 64px;
   --radius: 12px;
@@ -641,11 +641,11 @@ a { color:inherit; text-decoration:none; }
   line-height:1; margin-bottom:10px;
 }
 .form-heading em { font-style:normal; color:var(--r); }
-.form-subhead { font-size:0.95rem; color:var(--t4); line-height:1.6; margin-bottom:40px; font-weight:300; }
+.form-subhead { font-size:0.95rem; color:var(--t3); line-height:1.6; margin-bottom:40px; font-weight:400; }
 
 .form-section-sep {
   font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
-  color:var(--t4);
+  color:var(--t3);
   display:flex; align-items:center; gap:12px;
   margin:32px 0 20px;
 }
@@ -657,7 +657,7 @@ a { color:inherit; text-decoration:none; }
 .fgroup label {
   font-size:0.78rem; font-weight:700;
   letter-spacing:0.06em; text-transform:uppercase;
-  color:var(--t2);
+  color:var(--t1);
   display:flex; align-items:center; gap:4px;
 }
 .freq { color:var(--r); }
@@ -679,7 +679,7 @@ a { color:inherit; text-decoration:none; }
   background:rgba(232,40,26,0.04);
   box-shadow:0 0 0 3px rgba(232,40,26,0.12);
 }
-.fgroup input::placeholder, .fgroup textarea::placeholder { color:var(--t3); }
+.fgroup input::placeholder, .fgroup textarea::placeholder { color:var(--t3); font-style:italic; }
 .fgroup textarea { resize:vertical; min-height:120px; }
 .fgroup input.error { border-color:#FF6B6B; }
 
