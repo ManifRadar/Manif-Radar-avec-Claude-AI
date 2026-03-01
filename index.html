@@ -373,7 +373,7 @@ a { color:inherit; text-decoration:none; }
 
 /* Filtre */
 .filter-bar {
-  display:flex; flex-direction:column; gap:12px;
+  display:flex; align-items:center; gap:12px;
   margin-bottom:32px;
 }
 .filter-input-wrap {
@@ -406,20 +406,6 @@ a { color:inherit; text-decoration:none; }
 }
 .filter-clear:hover { color:var(--t1); }
 .filter-clear.show { display:block; }
-
-/* Filtres date */
-.filter-date-pills {
-  display:flex; gap:8px; flex-wrap:wrap;
-}
-.filter-pill {
-  padding:7px 14px; border-radius:20px;
-  border:1px solid var(--s4); background:transparent;
-  color:var(--t3); font-size:0.82rem; font-weight:600;
-  cursor:pointer; transition:all var(--transition);
-  white-space:nowrap;
-}
-.filter-pill:hover { border-color:var(--t3); color:var(--t2); }
-.filter-pill.active { background:var(--r); border-color:var(--r); color:white; }
 
 /* Pagination */
 .pagination {
@@ -1150,12 +1136,6 @@ footer {
         >
         <button class="filter-clear" id="filter-clear" onclick="clearFilter()" aria-label="Effacer la recherche">✕</button>
       </div>
-      <div class="filter-date-pills" id="filter-date-pills">
-        <button class="filter-pill active" data-period="all" onclick="setPeriod('all')">Toutes</button>
-        <button class="filter-pill" data-period="weekend" onclick="setPeriod('weekend')">Ce week-end</button>
-        <button class="filter-pill" data-period="week" onclick="setPeriod('week')">Cette semaine</button>
-        <button class="filter-pill" data-period="month" onclick="setPeriod('month')">Ce mois</button>
-      </div>
     </div>
 
     <div class="manifs-grid" id="manifs-grid" role="list">
@@ -1525,11 +1505,15 @@ async function chargerStats() {
     const villes = new Set(data.map(m => m.ville.toLowerCase())).size;
 
     // Manifs ce week-end
-    const range = getPeriodRange('weekend');
-    const ceWeekend = range ? data.filter(m => {
+    const now = new Date(); now.setHours(0,0,0,0);
+    const day = now.getDay();
+    const diffSam = (6 - day + 7) % 7;
+    const sam = new Date(now); sam.setDate(now.getDate() + diffSam);
+    const dim = new Date(sam); dim.setDate(sam.getDate() + 1);
+    const ceWeekend = data.filter(m => {
       const d = parseDate(m.date); d.setHours(0,0,0,0);
-      return d >= range.from && d <= range.to;
-    }).length : 0;
+      return d >= sam && d <= dim;
+    }).length;
 
     document.getElementById('stat-nb').textContent = nb;
     document.getElementById('stat-villes').textContent = villes;
@@ -1583,61 +1567,15 @@ function cardHTML(m) {
 const PAGE_SIZE = 12;
 let currentPage = 1;
 let filteredManifs = [];
-let activePeriod = 'all';
-
-function getPeriodRange(period) {
-  const today = new Date(); today.setHours(0,0,0,0);
-  if (period === 'all') return null;
-  if (period === 'weekend') {
-    const day = today.getDay();
-    const diffSam = (6 - day + 7) % 7;
-    const sam = new Date(today); sam.setDate(today.getDate() + diffSam);
-    const dim = new Date(sam); dim.setDate(sam.getDate() + 1);
-    return { from: sam, to: dim };
-  }
-  if (period === 'week') {
-    const end = new Date(today); end.setDate(today.getDate() + 6);
-    return { from: today, to: end };
-  }
-  if (period === 'month') {
-    const end = new Date(today); end.setDate(today.getDate() + 30);
-    return { from: today, to: end };
-  }
-  return null;
-}
-
-function setPeriod(period) {
-  activePeriod = period;
-  document.querySelectorAll('.filter-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.period === period);
-  });
-  currentPage = 1;
-  appliquerFiltres();
-}
 
 function appliquerFiltres() {
   const raw = document.getElementById('filter-ville').value;
   const q = normalise(raw);
-  const range = getPeriodRange(activePeriod);
-
-  let res = allManifs;
-
-  if (q) {
-    res = res.filter(m =>
-      normalise(m.ville).includes(q) ||
-      normalise(m.nom).includes(q) ||
-      normalise(m.organisateurs || '').includes(q)
-    );
-  }
-
-  if (range) {
-    res = res.filter(m => {
-      const d = parseDate(m.date); d.setHours(0,0,0,0);
-      return d >= range.from && d <= range.to;
-    });
-  }
-
-  filteredManifs = res;
+  filteredManifs = q ? allManifs.filter(m =>
+    normalise(m.ville).includes(q) ||
+    normalise(m.nom).includes(q) ||
+    normalise(m.organisateurs || '').includes(q)
+  ) : allManifs;
   afficher();
 }
 
