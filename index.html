@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="ManifRadar — Trouvez et déclarez des manifestations partout en France. Plateforme participative, gratuite et indépendante.">
 <meta name="theme-color" content="#0D0D0D">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://manifradar.fr">
+<meta property="og:title" content="ManifRadar — Toutes les manifestations en France">
+<meta property="og:description" content="Trouvez ou déclarez une manifestation en France. Gratuit, sans compte, sans pub.">
+<meta property="og:image" content="https://manifradar.fr/og-image.png">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ManifRadar — Toutes les manifestations en France">
+<meta name="twitter:description" content="Trouvez ou déclarez une manifestation en France. Gratuit, sans compte, sans pub.">
+<meta name="twitter:image" content="https://manifradar.fr/og-image.png">
 <title>ManifRadar — Les manifestations en France</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -360,7 +373,7 @@ a { color:inherit; text-decoration:none; }
 
 /* Filtre */
 .filter-bar {
-  display:flex; align-items:center; gap:12px;
+  display:flex; flex-direction:column; gap:12px;
   margin-bottom:32px;
 }
 .filter-input-wrap {
@@ -393,6 +406,37 @@ a { color:inherit; text-decoration:none; }
 }
 .filter-clear:hover { color:var(--t1); }
 .filter-clear.show { display:block; }
+
+/* Filtres date */
+.filter-date-pills {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.filter-pill {
+  padding:7px 14px; border-radius:20px;
+  border:1px solid var(--s4); background:transparent;
+  color:var(--t3); font-size:0.82rem; font-weight:600;
+  cursor:pointer; transition:all var(--transition);
+  white-space:nowrap;
+}
+.filter-pill:hover { border-color:var(--t3); color:var(--t2); }
+.filter-pill.active { background:var(--r); border-color:var(--r); color:white; }
+
+/* Pagination */
+.pagination {
+  display:flex; align-items:center; justify-content:center;
+  gap:8px; padding:32px 0 16px;
+}
+.pagination-btn {
+  padding:9px 18px; border-radius:8px;
+  border:1px solid var(--s4); background:transparent;
+  color:var(--t2); font-size:0.88rem; font-weight:600;
+  cursor:pointer; transition:all var(--transition);
+}
+.pagination-btn:hover:not(:disabled) { border-color:var(--r); color:var(--r); }
+.pagination-btn:disabled { opacity:0.3; cursor:not-allowed; }
+.pagination-info {
+  font-size:0.82rem; color:var(--t3); padding:0 8px;
+}
 
 /* Grille */
 .manifs-grid {
@@ -1066,8 +1110,8 @@ footer {
         <div class="stat-lbl">Villes couvertes</div>
       </div>
       <div class="stat-block">
-        <div class="stat-val">🆓</div>
-        <div class="stat-lbl">Gratuit · Sans inscription</div>
+        <div class="stat-val" id="stat-weekend">—</div>
+        <div class="stat-lbl">Ce week-end</div>
       </div>
     </div>
   </section>
@@ -1106,6 +1150,12 @@ footer {
         >
         <button class="filter-clear" id="filter-clear" onclick="clearFilter()" aria-label="Effacer la recherche">✕</button>
       </div>
+      <div class="filter-date-pills" id="filter-date-pills">
+        <button class="filter-pill active" data-period="all" onclick="setPeriod('all')">Toutes</button>
+        <button class="filter-pill" data-period="weekend" onclick="setPeriod('weekend')">Ce week-end</button>
+        <button class="filter-pill" data-period="week" onclick="setPeriod('week')">Cette semaine</button>
+        <button class="filter-pill" data-period="month" onclick="setPeriod('month')">Ce mois</button>
+      </div>
     </div>
 
     <div class="manifs-grid" id="manifs-grid" role="list">
@@ -1113,6 +1163,11 @@ footer {
         <div class="spinner" role="status" aria-label="Chargement"></div>
         <div>Chargement des manifestations…</div>
       </div>
+    </div>
+    <div class="pagination" id="pagination" style="display:none;">
+      <button class="pagination-btn" id="page-prev" onclick="changerPage(-1)">← Précédent</button>
+      <span class="pagination-info" id="page-info"></span>
+      <button class="pagination-btn" id="page-next" onclick="changerPage(1)">Suivant →</button>
     </div>
   </main>
   <footer>
@@ -1465,9 +1520,21 @@ async function supa(path, opts = {}) {
 async function chargerStats() {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const data = await supa(`manifestations?select=ville&date=gte.${today}`);
-    document.getElementById('stat-nb').textContent = data.length;
-    document.getElementById('stat-villes').textContent = new Set(data.map(m => m.ville.toLowerCase())).size;
+    const data = await supa(`manifestations?select=ville,date&date=gte.${today}&masquee=eq.false`);
+    const nb = data.length;
+    const villes = new Set(data.map(m => m.ville.toLowerCase())).size;
+
+    // Manifs ce week-end
+    const range = getPeriodRange('weekend');
+    const ceWeekend = range ? data.filter(m => {
+      const d = parseDate(m.date); d.setHours(0,0,0,0);
+      return d >= range.from && d <= range.to;
+    }).length : 0;
+
+    document.getElementById('stat-nb').textContent = nb;
+    document.getElementById('stat-villes').textContent = villes;
+    const weekendEl = document.getElementById('stat-weekend');
+    if (weekendEl) weekendEl.textContent = ceWeekend;
   } catch(e) {
     document.getElementById('stat-nb').textContent = '0';
     document.getElementById('stat-villes').textContent = '0';
@@ -1482,21 +1549,12 @@ async function chargerManifs() {
     const today = new Date().toISOString().split('T')[0];
     const data = await supa(`manifestations?date=gte.${today}&masquee=eq.false&order=date.asc`);
     allManifs = data;
-    afficher(allManifs);
+    filteredManifs = data;
+    currentPage = 1;
+    afficher();
   } catch(e) {
     grid.innerHTML = `<div class="state-empty"><div class="state-empty-icon">⚠️</div><div class="state-empty-title">Erreur</div><div class="state-empty-desc">${esc(e.message)}</div></div>`;
   }
-}
-
-function afficher(list) {
-  const grid = document.getElementById('manifs-grid');
-  const count = document.getElementById('liste-count');
-  count.textContent = list.length === 0 ? 'Aucune manifestation trouvée' : `${list.length} manifestation${list.length > 1 ? 's' : ''} à venir`;
-  if (list.length === 0) {
-    grid.innerHTML = `<div class="state-empty"><div class="state-empty-icon">📭</div><div class="state-empty-title">Aucune manif trouvée</div><div class="state-empty-desc">Aucune manifestation ne correspond à ta recherche.<br>Sois le premier à en déclarer une !</div></div>`;
-    return;
-  }
-  grid.innerHTML = list.map(m => cardHTML(m)).join('');
 }
 
 function cardHTML(m) {
@@ -1522,27 +1580,132 @@ function cardHTML(m) {
   </article>`;
 }
 
-function filtrer() {
+const PAGE_SIZE = 12;
+let currentPage = 1;
+let filteredManifs = [];
+let activePeriod = 'all';
+
+function getPeriodRange(period) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (period === 'all') return null;
+  if (period === 'weekend') {
+    const day = today.getDay();
+    const diffSam = (6 - day + 7) % 7;
+    const sam = new Date(today); sam.setDate(today.getDate() + diffSam);
+    const dim = new Date(sam); dim.setDate(sam.getDate() + 1);
+    return { from: sam, to: dim };
+  }
+  if (period === 'week') {
+    const end = new Date(today); end.setDate(today.getDate() + 6);
+    return { from: today, to: end };
+  }
+  if (period === 'month') {
+    const end = new Date(today); end.setDate(today.getDate() + 30);
+    return { from: today, to: end };
+  }
+  return null;
+}
+
+function setPeriod(period) {
+  activePeriod = period;
+  document.querySelectorAll('.filter-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.period === period);
+  });
+  currentPage = 1;
+  appliquerFiltres();
+}
+
+function appliquerFiltres() {
   const raw = document.getElementById('filter-ville').value;
   const q = normalise(raw);
-  const btn = document.getElementById('filter-clear');
-  btn.classList.toggle('show', raw.length > 0);
-  const res = q ? allManifs.filter(m =>
-    normalise(m.ville).includes(q) ||
-    normalise(m.nom).includes(q) ||
-    normalise(m.organisateurs || '').includes(q)
-  ) : allManifs;
-  afficher(res);
+  const range = getPeriodRange(activePeriod);
+
+  let res = allManifs;
+
+  if (q) {
+    res = res.filter(m =>
+      normalise(m.ville).includes(q) ||
+      normalise(m.nom).includes(q) ||
+      normalise(m.organisateurs || '').includes(q)
+    );
+  }
+
+  if (range) {
+    res = res.filter(m => {
+      const d = parseDate(m.date); d.setHours(0,0,0,0);
+      return d >= range.from && d <= range.to;
+    });
+  }
+
+  filteredManifs = res;
+  afficher();
+}
+
+function afficher() {
+  const grid = document.getElementById('manifs-grid');
+  const count = document.getElementById('liste-count');
+  const pagination = document.getElementById('pagination');
+  const total = filteredManifs.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  // Clamp page
+  if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page = filteredManifs.slice(start, start + PAGE_SIZE);
+
+  // Count label
+  if (total === 0) {
+    count.textContent = 'Aucune manifestation trouvée';
+  } else {
+    const debut = start + 1;
+    const fin = Math.min(start + PAGE_SIZE, total);
+    count.textContent = totalPages > 1
+      ? `${total} manifestation${total > 1 ? 's' : ''} — ${debut}–${fin}`
+      : `${total} manifestation${total > 1 ? 's' : ''} à venir`;
+  }
+
+  if (total === 0) {
+    grid.innerHTML = `<div class="state-empty"><div class="state-empty-icon">📭</div><div class="state-empty-title">Aucune manif trouvée</div><div class="state-empty-desc">Aucune manifestation ne correspond à ta recherche.<br>Sois le premier à en déclarer une !</div></div>`;
+    pagination.style.display = 'none';
+    return;
+  }
+
+  grid.innerHTML = page.map(m => cardHTML(m)).join('');
+
+  // Pagination
+  if (totalPages > 1) {
+    pagination.style.display = 'flex';
+    document.getElementById('page-prev').disabled = currentPage === 1;
+    document.getElementById('page-next').disabled = currentPage === totalPages;
+    document.getElementById('page-info').textContent = `Page ${currentPage} / ${totalPages}`;
+  } else {
+    pagination.style.display = 'none';
+  }
 }
 
 function normalise(s) {
   return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 }
 
+function changerPage(dir) {
+  currentPage += dir;
+  afficher();
+  document.getElementById('manifs-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function filtrer() {
+  const raw = document.getElementById('filter-ville').value;
+  document.getElementById('filter-clear').classList.toggle('show', raw.length > 0);
+  currentPage = 1;
+  appliquerFiltres();
+}
+
 function clearFilter() {
   document.getElementById('filter-ville').value = '';
   document.getElementById('filter-clear').classList.remove('show');
-  afficher(allManifs);
+  currentPage = 1;
+  appliquerFiltres();
   document.getElementById('filter-ville').focus();
 }
 
