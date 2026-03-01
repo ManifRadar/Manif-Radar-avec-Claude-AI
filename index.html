@@ -964,6 +964,20 @@ footer {
   .admin-table td { display:block; padding:4px 0; border:none; }
   .admin-wrap { padding:32px 16px 60px; }
 }
+/* ------ SCROLL TO TOP ------ */
+#scroll-top {
+  position:fixed; bottom:24px; right:24px; z-index:800;
+  width:44px; height:44px; border-radius:50%;
+  background:var(--r); border:none; color:white;
+  font-size:1.1rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity 0.3s, transform 0.3s, background var(--transition);
+  box-shadow:0 4px 16px rgba(232,40,26,0.4);
+}
+#scroll-top.visible { opacity:1; pointer-events:auto; }
+#scroll-top:hover { background:var(--r2); transform:translateY(-2px); }
+
 /* ------ SIGNALEMENT ------ */
 .btn-signaler {
   display:flex; align-items:center; gap:6px;
@@ -1305,6 +1319,9 @@ footer {
   </div>
   <div class="drawer-body" id="drawer-body"></div>
 </aside>
+
+<!-- SCROLL TO TOP -->
+<button id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Retour en haut">↑</button>
 
 <!-- TOAST -->
 <div id="toast" role="status" aria-live="polite"></div>
@@ -1945,6 +1962,11 @@ document.addEventListener('click', e => {
 });
 
 initCal();
+
+// Scroll to top button
+window.addEventListener('scroll', () => {
+  document.getElementById('scroll-top').classList.toggle('visible', window.scrollY > 300);
+});
 
 // Init
 chargerStats();
