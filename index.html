@@ -18,6 +18,19 @@
 <meta name="twitter:title" content="ManifRadar — Toutes les manifestations en France">
 <meta name="twitter:description" content="Trouvez ou déclarez une manifestation en France. Gratuit, sans compte, sans pub.">
 <meta name="twitter:image" content="https://manifradar.fr/og-image-v2.png">
+<link rel="canonical" href="https://manifradar.fr/">
+
+<!-- Schema.org WebSite -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ManifRadar",
+  "url": "https://manifradar.fr",
+  "description": "Plateforme participative pour trouver et déclarer des manifestations en France.",
+  "inLanguage": "fr"
+}
+</script>
 <title>ManifRadar — Les manifestations en France</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1729,6 +1742,31 @@ async function ouvrirDetail(id) {
   document.body.style.overflow = 'hidden';
   document.getElementById('detail-drawer').focus();
   majBoutonSignaler(m.id);
+
+  // Schema.org Event pour le SEO
+  const existingSchema = document.getElementById('schema-event');
+  if (existingSchema) existingSchema.remove();
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": m.nom,
+    "startDate": m.date + (m.heure ? 'T' + m.heure.replace('h',':').padEnd(5,'0') : ''),
+    "location": {
+      "@type": "Place",
+      "name": m.lieu || m.ville,
+      "address": { "@type": "PostalAddress", "addressLocality": m.ville, "addressCountry": "FR" }
+    },
+    "description": m.revendications || m.nom,
+    "organizer": m.organisateurs ? { "@type": "Organization", "name": m.organisateurs } : undefined,
+    "url": `https://manifradar.fr/#manif-${m.id}`,
+    "eventStatus": "https://schema.org/EventScheduled",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode"
+  };
+  const tag = document.createElement('script');
+  tag.type = 'application/ld+json';
+  tag.id = 'schema-event';
+  tag.textContent = JSON.stringify(schema);
+  document.head.appendChild(tag);
 }
 
 function closeDetail() {
