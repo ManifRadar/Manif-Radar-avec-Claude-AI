@@ -1781,11 +1781,39 @@ function partager() {
   if (!currentManif) return;
   const url = `${window.location.origin}${window.location.pathname}#manif-${currentManif.id}`;
   const txt = `${currentManif.nom} — ${currentManif.lieu}, ${currentManif.ville} · ${currentManif.heure}`;
+
+  const copier = () => {
+    // Méthode 1 : clipboard API moderne
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url)
+        .then(() => toast('✓ Lien copié !'))
+        .catch(() => copierFallback(url));
+    } else {
+      copierFallback(url);
+    }
+  };
+
   if (navigator.share) {
-    navigator.share({ title: currentManif.nom, text: txt, url });
+    navigator.share({ title: currentManif.nom, text: txt, url }).catch(() => copier());
   } else {
-    navigator.clipboard.writeText(url).then(() => toast('🔗 Lien copié dans le presse-papier'));
+    copier();
   }
+}
+
+function copierFallback(url) {
+  // Méthode 2 : champ texte temporaire (fonctionne partout)
+  const el = document.createElement('textarea');
+  el.value = url;
+  el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+  document.body.appendChild(el);
+  el.select();
+  try {
+    document.execCommand('copy');
+    toast('✓ Lien copié !');
+  } catch(e) {
+    toast('📋 ' + url);
+  }
+  document.body.removeChild(el);
 }
 
 /* ------ FORMULAIRE ------ */
@@ -2020,33 +2048,55 @@ async function signalerManif() {
   const id = currentManif.id;
   if (signalementsFaits.has(id)) return;
 
-  try {
-    const actuel = currentManif.signalements || 0;
-    const nouveau = actuel + 1;
-    const masquer = nouveau >= SEUIL_SIGNALEMENT;
+  // Confirmation
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = `
+    <div style="background:var(--s1);border:1px solid var(--s3);border-radius:16px;padding:28px;max-width:380px;width:100%;text-align:center;">
+      <div style="font-size:2rem;margin-bottom:16px;">🚩</div>
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;margin-bottom:10px;">Signaler cet événement ?</h3>
+      <p style="color:var(--t3);font-size:0.88rem;line-height:1.6;margin-bottom:24px;">À utiliser uniquement si l'événement est faux, haineux ou inapproprié.</p>
+      <div style="display:flex;gap:12px;">
+        <button onclick="this.closest('[style]').remove()" style="flex:1;padding:12px;border-radius:8px;border:1px solid var(--s4);background:transparent;color:var(--t2);font-weight:600;cursor:pointer;font-size:0.9rem;">
+          Annuler
+        </button>
+        <button id="btn-confirmer-signalement" style="flex:1;padding:12px;border-radius:8px;border:none;background:var(--r);color:white;font-weight:600;cursor:pointer;font-size:0.9rem;">
+          Confirmer
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
 
-    await supa(`manifestations?id=eq.${id}`, {
-      method: 'PATCH',
-      prefer: 'return=minimal',
-      body: JSON.stringify({ signalements: nouveau, ...(masquer ? { masquee: true } : {}) })
-    });
+  document.getElementById('btn-confirmer-signalement').onclick = async () => {
+    modal.remove();
+    try {
+      const actuel = currentManif.signalements || 0;
+      const nouveau = actuel + 1;
+      const masquer = nouveau >= SEUIL_SIGNALEMENT;
 
-    signalementsFaits.add(id);
-    localStorage.setItem('signalements', JSON.stringify([...signalementsFaits]));
-    currentManif.signalements = nouveau;
+      await supa(`manifestations?id=eq.${id}`, {
+        method: 'PATCH',
+        prefer: 'return=minimal',
+        body: JSON.stringify({ signalements: nouveau, ...(masquer ? { masquee: true } : {}) })
+      });
 
-    majBoutonSignaler(id);
+      signalementsFaits.add(id);
+      localStorage.setItem('signalements', JSON.stringify([...signalementsFaits]));
+      currentManif.signalements = nouveau;
 
-    if (masquer) {
-      toast('⚠️ Cette manifestation a été masquée suite aux signalements.');
-      allManifs = allManifs.filter(m => m.id !== id);
-      setTimeout(() => closeDetail(), 1500);
-    } else {
-      toast('🚩 Signalement enregistré, merci.');
+      majBoutonSignaler(id);
+
+      if (masquer) {
+        toast('⚠️ Cette manifestation a été masquée suite aux signalements.');
+        allManifs = allManifs.filter(m => m.id !== id);
+        setTimeout(() => closeDetail(), 1500);
+      } else {
+        toast('🚩 Signalement enregistré, merci.');
+      }
+    } catch(e) {
+      toast('❌ Erreur : ' + e.message);
     }
-  } catch(e) {
-    toast('❌ Erreur : ' + e.message);
-  }
+  };
 }
 const ADMIN_HASH = 'a7f3b2c9e1d4f6a8b0c2e4f7a9b1c3e5'; // hash visuel, vrai check côté JS
 const ADMIN_PWD  = 'Basrhinhautrhin6768!';
