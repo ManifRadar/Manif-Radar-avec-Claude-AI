@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -2056,9 +2057,11 @@ async function signalerManif() {
   modal.id = 'modal-signalement';
   modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;padding:20px;';
 
-  const fermer = () => modal.remove();
+  let annule = false;
+  const fermer = () => { annule = true; modal.remove(); };
 
   const confirmer = async () => {
+    if (annule) return;
     modal.remove();
     try {
       const actuel = manifSnapshot.signalements || 0;
