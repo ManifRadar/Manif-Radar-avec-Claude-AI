@@ -1315,7 +1315,7 @@ footer {
 
     <div class="apropos-block">
       <h3>Contact</h3>
-      <p>Pour toute question ou pour demander la suppression d'un événement, vous pouvez écrire à <a href="/cdn-cgi/l/email-protection#2d404c43444b5f4c494c5f6d4a404c4441034e4240" style="color:var(--r3);text-decoration:underline;"><span class="__cf_email__" data-cfemail="432e222d2a25312227223103242e222a2f6d202c2e">[email&#160;protected]</span></a>.</p>
+      <p>Pour toute question ou pour demander la suppression d'un événement, vous pouvez écrire à <a href="mailto:manifradar@gmail.com" style="color:var(--r3);text-decoration:underline;">manifradar@gmail.com</a>.</p>
       <p style="margin-top:12px;">ManifRadar est un projet bénévole, géré par une seule personne sur son temps libre. Merci de n'écrire qu'en cas de réelle nécessité.</p>
     </div>
 
@@ -1335,7 +1335,7 @@ footer {
 
     <div class="apropos-block">
       <h3>Qui sommes-nous ?</h3>
-      <p>ManifRadar est une plateforme indépendante et bénévole permettant de centraliser les manifestations en France. Elle est gérée par une seule personne, à titre personnel et non commercial. Contact : <a href="/cdn-cgi/l/email-protection#c5a8a4abaca3b7a4a1a4b785a2a8a4aca9eba6aaa8" style="color:var(--r3);"><span class="__cf_email__" data-cfemail="711c101f1817031015100331161c10181d5f121e1c">[email&#160;protected]</span></a></p>
+      <p>ManifRadar est une plateforme indépendante et bénévole permettant de centraliser les manifestations en France. Elle est gérée par une seule personne, à titre personnel et non commercial. Contact : <a href="mailto:manifradar@gmail.com" style="color:var(--r3);">manifradar@gmail.com</a></p>
     </div>
 
     <hr class="apropos-sep">
@@ -1366,7 +1366,7 @@ footer {
 
     <div class="apropos-block">
       <h3>Vos droits</h3>
-      <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour exercer ces droits ou demander le retrait d'un événement, écrivez à : <a href="/cdn-cgi/l/email-protection#f598949b9c938794919487b59298949c99db969a98" style="color:var(--r3);"><span class="__cf_email__" data-cfemail="264b47484f40544742475466414b474f4a0845494b">[email&#160;protected]</span></a></p>
+      <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour exercer ces droits ou demander le retrait d'un événement, écrivez à : <a href="mailto:manifradar@gmail.com" style="color:var(--r3);">manifradar@gmail.com</a></p>
       <p>ManifRadar étant un projet bénévole géré par une seule personne, merci de formuler des demandes raisonnables et d'anticiper un délai de traitement de quelques jours.</p>
     </div>
 
@@ -1450,7 +1450,7 @@ footer {
 <!-- ============================================================
      JAVASCRIPT
      ============================================================ -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 const SUPA_URL = 'https://pleggocdxecyvdszhdyl.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsZWdnb2NkeGVjeXZkc3poZHlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MzM0NTIsImV4cCI6MjA4NzUwOTQ1Mn0.2OHVGXhPgf9-I4u2km7EU1Yj5xZDTX64yFOPz3QhLtE';
 
@@ -1679,8 +1679,20 @@ async function ouvrirDetail(id) {
       const data = await supa(`manifestations?id=eq.${id}`);
       if (!data || data.length === 0) return;
       currentManif = data[0];
- ss="drawer-section">
-      <div class="drawer-section-title">Lieu & horaire</div>
+    } catch(e) { return; }
+  }
+  const m = currentManif;
+  const d = parseDate(m.date);
+  const dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const dateStrCap = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-date-band">
+      <div class="drawer-date-text">${dateStrCap} · ${esc(m.heure)}</div>
+      <div class="drawer-nom">${esc(m.nom)}</div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Lieu &amp; horaire</div>
       <div class="drawer-info-grid">
         <div class="drawer-info-block">
           <div class="drawer-info-label">📅 Date</div>
@@ -1705,7 +1717,7 @@ async function ouvrirDetail(id) {
     <div class="drawer-section">
       <div class="drawer-section-title">Revendications</div>
       <div class="drawer-revendications">
-        <div class="drawer-revendications-title">Mot d'ordre</div>
+        <div class="drawer-revendications-title">Mot d\'ordre</div>
         <div class="drawer-revendications-text">${esc(m.revendications)}</div>
       </div>
     </div>` : ''}
@@ -1729,7 +1741,7 @@ async function ouvrirDetail(id) {
     </div>
     <div style="text-align:center;padding:8px 24px 32px;">
       <button id="btn-signaler" onclick="signalerManif()" style="background:none;border:none;color:var(--t4);font-size:0.78rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:8px 16px;transition:color var(--transition);"
-        onmouseover="this.style.color='var(--r3)'" onmouseout="this.style.color='var(--t4)'">
+        onmouseover="this.style.color=\'var(--r3)\'" onmouseout="this.style.color=\'var(--t4)\'">
         🚩 Signaler cet événement
       </button>
     </div>
@@ -1741,7 +1753,6 @@ async function ouvrirDetail(id) {
   document.getElementById('detail-drawer').focus();
   majBoutonSignaler(m.id);
 
-  // Schema.org Event pour le SEO
   const existingSchema = document.getElementById('schema-event');
   if (existingSchema) existingSchema.remove();
   const schema = {
@@ -1766,7 +1777,6 @@ async function ouvrirDetail(id) {
   tag.textContent = JSON.stringify(schema);
   document.head.appendChild(tag);
 }
-
 function closeDetail() {
   document.getElementById('detail-backdrop').classList.remove('open');
   document.getElementById('detail-drawer').classList.remove('open');
