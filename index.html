@@ -20,6 +20,12 @@
 <meta name="twitter:image" content="https://manifradar.fr/og-image-v2.png">
 <link rel="canonical" href="https://manifradar.fr/">
 <meta name="google-site-verification" content="08fE5N07fMFRN1oSN7GO3xoRrJY6PyzQ3CtvL-W7EFs" />
+<meta name="author" content="ManifRadar">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <!-- Schema.org WebSite -->
 <script type="application/ld+json">
@@ -1780,39 +1786,44 @@ function closeDetail() {
 function partager() {
   if (!currentManif) return;
   const url = `${window.location.origin}${window.location.pathname}#manif-${currentManif.id}`;
-  const txt = `${currentManif.nom} — ${currentManif.lieu}, ${currentManif.ville} · ${currentManif.heure}`;
 
   const copier = () => {
-    // Méthode 1 : clipboard API moderne
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url)
-        .then(() => toast('✓ Lien copié !'))
+        .then(() => confirmerCopie())
         .catch(() => copierFallback(url));
     } else {
       copierFallback(url);
     }
   };
 
-  if (navigator.share) {
-    navigator.share({ title: currentManif.nom, text: txt, url }).catch(() => copier());
-  } else {
-    copier();
+  copier();
+}
+
+function confirmerCopie() {
+  const btn = document.getElementById('btn-share');
+  if (btn) {
+    const original = btn.innerHTML;
+    btn.innerHTML = '✓ Lien copié !';
+    btn.style.background = 'rgba(34,197,94,0.15)';
+    btn.style.borderColor = 'rgba(34,197,94,0.4)';
+    btn.style.color = '#22C55E';
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 2000);
   }
 }
 
 function copierFallback(url) {
-  // Méthode 2 : champ texte temporaire (fonctionne partout)
   const el = document.createElement('textarea');
   el.value = url;
   el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
   document.body.appendChild(el);
   el.select();
-  try {
-    document.execCommand('copy');
-    toast('✓ Lien copié !');
-  } catch(e) {
-    toast('📋 ' + url);
-  }
+  try { document.execCommand('copy'); confirmerCopie(); } catch(e) { toast('📋 ' + url); }
   document.body.removeChild(el);
 }
 
