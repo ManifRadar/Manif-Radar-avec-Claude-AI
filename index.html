@@ -2049,30 +2049,19 @@ async function signalerManif() {
   const id = currentManif.id;
   if (signalementsFaits.has(id)) return;
 
-  // Confirmation
+  // Snapshot de la manif au moment du clic
+  const manifSnapshot = currentManif;
+
   const modal = document.createElement('div');
   modal.id = 'modal-signalement';
   modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;padding:20px;';
-  modal.innerHTML = `
-    <div style="background:var(--s1);border:1px solid var(--s3);border-radius:16px;padding:28px;max-width:380px;width:100%;text-align:center;">
-      <div style="font-size:2rem;margin-bottom:16px;">🚩</div>
-      <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;margin-bottom:10px;">Signaler cet événement ?</h3>
-      <p style="color:var(--t3);font-size:0.88rem;line-height:1.6;margin-bottom:24px;">À utiliser uniquement si l'événement est faux, haineux ou inapproprié.</p>
-      <div style="display:flex;gap:12px;">
-        <button onclick="document.getElementById('modal-signalement').remove()" style="flex:1;padding:12px;border-radius:8px;border:1px solid var(--s4);background:transparent;color:var(--t2);font-weight:600;cursor:pointer;font-size:0.9rem;">
-          Annuler
-        </button>
-        <button id="btn-confirmer-signalement" style="flex:1;padding:12px;border-radius:8px;border:none;background:var(--r);color:white;font-weight:600;cursor:pointer;font-size:0.9rem;">
-          Confirmer
-        </button>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
 
-  document.getElementById('btn-confirmer-signalement').onclick = async () => {
+  const fermer = () => modal.remove();
+
+  const confirmer = async () => {
     modal.remove();
     try {
-      const actuel = currentManif.signalements || 0;
+      const actuel = manifSnapshot.signalements || 0;
       const nouveau = actuel + 1;
       const masquer = nouveau >= SEUIL_SIGNALEMENT;
 
@@ -2084,8 +2073,7 @@ async function signalerManif() {
 
       signalementsFaits.add(id);
       localStorage.setItem('signalements', JSON.stringify([...signalementsFaits]));
-      currentManif.signalements = nouveau;
-
+      manifSnapshot.signalements = nouveau;
       majBoutonSignaler(id);
 
       if (masquer) {
@@ -2099,6 +2087,21 @@ async function signalerManif() {
       toast('❌ Erreur : ' + e.message);
     }
   };
+
+  modal.innerHTML = `
+    <div style="background:var(--s1);border:1px solid var(--s3);border-radius:16px;padding:28px;max-width:380px;width:100%;text-align:center;">
+      <div style="font-size:2rem;margin-bottom:16px;">🚩</div>
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;margin-bottom:10px;">Signaler cet événement ?</h3>
+      <p style="color:var(--t3);font-size:0.88rem;line-height:1.6;margin-bottom:24px;">À utiliser uniquement si l'événement est faux, haineux ou inapproprié.</p>
+      <div style="display:flex;gap:12px;">
+        <button id="btn-annuler-signalement" style="flex:1;padding:12px;border-radius:8px;border:1px solid var(--s4);background:transparent;color:var(--t2);font-weight:600;cursor:pointer;font-size:0.9rem;">Annuler</button>
+        <button id="btn-confirmer-signalement" style="flex:1;padding:12px;border-radius:8px;border:none;background:var(--r);color:white;font-weight:600;cursor:pointer;font-size:0.9rem;">Confirmer</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  document.getElementById('btn-annuler-signalement').addEventListener('click', fermer);
+  document.getElementById('btn-confirmer-signalement').addEventListener('click', confirmer);
 }
 const ADMIN_HASH = 'a7f3b2c9e1d4f6a8b0c2e4f7a9b1c3e5'; // hash visuel, vrai check côté JS
 const ADMIN_PWD  = 'Basrhinhautrhin6768!';
