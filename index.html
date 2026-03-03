@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1315,7 +1316,7 @@ footer {
 
     <div class="apropos-block">
       <h3>Contact</h3>
-      <p>Pour toute question ou pour demander la suppression d'un événement, vous pouvez écrire à <a href="mailto:manifradar@gmail.com" style="color:var(--r3);text-decoration:underline;">manifradar@gmail.com</a>.</p>
+      <p>Pour toute question ou pour demander la suppression d'un événement, vous pouvez écrire à <a href="/cdn-cgi/l/email-protection#acc1cdc2c5cadecdc8cddeeccbc1cdc5c082cfc3c1" style="color:var(--r3);text-decoration:underline;"><span class="__cf_email__" data-cfemail="274a46494e41554643465567404a464e4b0944484a">[email&#160;protected]</span></a>.</p>
       <p style="margin-top:12px;">ManifRadar est un projet bénévole, géré par une seule personne sur son temps libre. Merci de n'écrire qu'en cas de réelle nécessité.</p>
     </div>
 
@@ -1335,7 +1336,7 @@ footer {
 
     <div class="apropos-block">
       <h3>Qui sommes-nous ?</h3>
-      <p>ManifRadar est une plateforme indépendante et bénévole permettant de centraliser les manifestations en France. Elle est gérée par une seule personne, à titre personnel et non commercial. Contact : <a href="mailto:manifradar@gmail.com" style="color:var(--r3);">manifradar@gmail.com</a></p>
+      <p>ManifRadar est une plateforme indépendante et bénévole permettant de centraliser les manifestations en France. Elle est gérée par une seule personne, à titre personnel et non commercial. Contact : <a href="/cdn-cgi/l/email-protection#fc919d92959a8e9d989d8ebc9b919d9590d29f9391" style="color:var(--r3);"><span class="__cf_email__" data-cfemail="412c202f2827332025203301262c20282d6f222e2c">[email&#160;protected]</span></a></p>
     </div>
 
     <hr class="apropos-sep">
@@ -1366,7 +1367,7 @@ footer {
 
     <div class="apropos-block">
       <h3>Vos droits</h3>
-      <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour exercer ces droits ou demander le retrait d'un événement, écrivez à : <a href="mailto:manifradar@gmail.com" style="color:var(--r3);">manifradar@gmail.com</a></p>
+      <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour exercer ces droits ou demander le retrait d'un événement, écrivez à : <a href="/cdn-cgi/l/email-protection#c4a9a5aaada2b6a5a0a5b684a3a9a5ada8eaa7aba9" style="color:var(--r3);"><span class="__cf_email__" data-cfemail="2f424e4146495d4e4b4e5d6f48424e4643014c4042">[email&#160;protected]</span></a></p>
       <p>ManifRadar étant un projet bénévole géré par une seule personne, merci de formuler des demandes raisonnables et d'anticiper un délai de traitement de quelques jours.</p>
     </div>
 
@@ -1450,7 +1451,7 @@ footer {
 <!-- ============================================================
      JAVASCRIPT
      ============================================================ -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const SUPA_URL = 'https://pleggocdxecyvdszhdyl.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsZWdnb2NkeGVjeXZkc3poZHlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MzM0NTIsImV4cCI6MjA4NzUwOTQ1Mn0.2OHVGXhPgf9-I4u2km7EU1Yj5xZDTX64yFOPz3QhLtE';
 
@@ -1473,6 +1474,9 @@ function showPage(id) {
       history.replaceState(null, '', id === 'home' ? '#page-home' : '#page-' + id);
     } catch(e) {}
     try { sessionStorage.setItem('manifradar_page', id); } catch(e) {}
+  }
+  if (id === 'admin') {
+    try { history.replaceState(null, '', '#admin'); } catch(e) {}
   }
   if (id === 'liste') chargerManifs();
   if (id === 'home') chargerStats();
@@ -2243,7 +2247,7 @@ if (initHash === '#admin') {
   // Fallback sessionStorage pour mobile
   try {
     const saved = sessionStorage.getItem('manifradar_page');
-    if (saved) showPage(saved);
+    if (saved && saved !== 'admin') showPage(saved);
     else showPage('home');
   } catch(e) { showPage('home'); }
 }
@@ -2314,26 +2318,4 @@ function selectDay(iso) {
   const [y,m,d] = iso.split('-');
   const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
   const disp = document.getElementById('f-date-display');
-  disp.textContent = `${parseInt(d)} ${MOIS[parseInt(m)-1]} ${y}`;
-  disp.classList.remove('placeholder','error');
-  closeCal();
-}
-
-// Fermer le cal en cliquant dehors
-document.addEventListener('click', e => {
-  const wrap = document.getElementById('cal-wrap');
-  if (wrap && !wrap.contains(e.target)) closeCal();
-});
-
-initCal();
-
-// Scroll to top button
-window.addEventListener('scroll', () => {
-  document.getElementById('scroll-top').classList.toggle('visible', window.scrollY > 300);
-});
-
-// Init
-chargerStats();
-</script>
-</body>
-</html>
+  disp.textContent = `${parseInt(d)} ${MOIS[par
