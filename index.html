@@ -2319,4 +2319,26 @@ function selectDay(iso) {
   const [y,m,d] = iso.split('-');
   const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
   const disp = document.getElementById('f-date-display');
-  disp.textContent = `${parseInt(d)} ${MOIS[par
+  disp.textContent = `${parseInt(d)} ${MOIS[parseInt(m)-1]} ${y}`;
+  disp.classList.remove('placeholder','error');
+  closeCal();
+}
+
+// Fermer le cal en cliquant dehors
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('cal-wrap');
+  if (wrap && !wrap.contains(e.target)) closeCal();
+});
+
+initCal();
+
+// Scroll to top button
+window.addEventListener('scroll', () => {
+  document.getElementById('scroll-top').classList.toggle('visible', window.scrollY > 300);
+});
+
+// Init
+chargerStats();
+</script>
+</body>
+</html>
