@@ -1945,17 +1945,13 @@ document.addEventListener('keydown', e => {
 
 /* ------ MODÉRATION MOTS-CLÉS ------ */
 const MOTS_INTERDITS = [
-  // Insultes & haine
+  // Insultes brutes
   'merde','connard','connasse','salope','pute','bâtard','batard',
   'fdp','enculé','encule','nique','niquer','n.t.m','pd ','pédé','pede',
-  'nazi','fasciste','raciste','antisémite','antisemite',
+  // Injures racistes (usage haineux, pas militant)
   'negro','nègre','negre','bounty','bougnoule','youpin','feuj',
-  'islamophobie','homophobe',
-  // Contenu haineux explicite
-  'gauchiste','facho','bolchevique','islamo','islamiste',
-  'grande remplaceme','grand remplacement',
-  'mort aux','crève','crevent','à mort',
-  'extermination','génocide','genocide',
+  // Appels à la violence explicite
+  'mort aux','crève','crevent','à mort','extermination',
   // Spam / fake
   'arnaque','escroquerie','promotion','promo','casino','bitcoin','crypto'
 ];
