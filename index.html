@@ -3,6 +3,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1459,6 +1460,7 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 
 let allManifs = [];
 let currentManif = null;
+let calYear, calMonth, calSelected = null;
 
 /* ------ NAVIGATION ------ */
 function showPage(id) {
@@ -2249,7 +2251,6 @@ if (initHash === '#admin') {
     else showPage('home');
   } catch(e) { showPage('home'); }
 }
-let calYear, calMonth, calSelected = null;
 
 function initCal() {
   const now = new Date();
